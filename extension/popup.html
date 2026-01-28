@@ -234,6 +234,59 @@
       0%, 100% { opacity: 1; }
       50% { opacity: 0.5; }
     }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 10px;
+      font-size: 11px;
+      color: #d1d5db;
+    }
+
+    .toggle-row label {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .toggle-row small {
+      color: #9ca3af;
+      font-size: 10px;
+    }
+
+    .toggle-input {
+      width: 34px;
+      height: 18px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(148, 163, 184, 0.45);
+      position: relative;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .toggle-input::before {
+      content: "";
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      background: #e5e7eb;
+      transition: transform 0.15s ease;
+    }
+
+    .toggle-input.checked {
+      background: linear-gradient(135deg, #34d399, #22c55e);
+      border-color: rgba(52, 211, 153, 0.8);
+    }
+
+    .toggle-input.checked::before {
+      transform: translateX(14px);
+    }
   </style>
 </head>
 <body>
@@ -267,6 +320,14 @@
       <div class="status" id="status">
         <span class="status-dot" id="statusDot"></span>
         <span id="statusText">Checking connection…</span>
+      </div>
+
+      <div class="toggle-row">
+        <label for="blockDeepLinks">
+          Block Spotify desktop hand‑off
+          <small>Prevents open.spotify.com from launching the Spotify app.</small>
+        </label>
+        <div id="blockDeepLinksToggle" class="toggle-input" role="switch" aria-checked="false" tabindex="0"></div>
       </div>
     </div>
 

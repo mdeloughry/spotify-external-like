@@ -34,10 +34,26 @@ document.addEventListener('DOMContentLoaded', async () => {
   const searchBtn = document.getElementById('searchBtn');
   const appUrlInput = document.getElementById('appUrl');
   const savedIndicator = document.getElementById('saved');
+  const blockDeepLinksToggle = document.getElementById('blockDeepLinksToggle');
 
-  // Load saved app URL
-  const result = await chrome.storage.sync.get({ appUrl: DEFAULT_APP_URL });
+  // Load saved app URL and deep-link blocking preference
+  const result = await chrome.storage.sync.get({
+    appUrl: DEFAULT_APP_URL,
+    blockSpotifyDeepLinks: false
+  });
   appUrlInput.value = result.appUrl;
+
+  // Initialise toggle UI state (default off)
+  const applyToggleState = (enabled) => {
+    if (enabled) {
+      blockDeepLinksToggle.classList.add('checked');
+      blockDeepLinksToggle.setAttribute('aria-checked', 'true');
+    } else {
+      blockDeepLinksToggle.classList.remove('checked');
+      blockDeepLinksToggle.setAttribute('aria-checked', 'false');
+    }
+  };
+  applyToggleState(Boolean(result.blockSpotifyDeepLinks));
 
   // Check connection on load
   checkConnection(result.appUrl);
@@ -71,6 +87,22 @@ document.addEventListener('DOMContentLoaded', async () => {
       setTimeout(() => savedIndicator.classList.remove('show'), 2000);
       checkConnection(newUrl);
     }, 500);
+  });
+
+  // Handle deep-link blocking toggle
+  const toggleBlockDeepLinks = () => {
+    const currentlyEnabled = blockDeepLinksToggle.classList.contains('checked');
+    const nextEnabled = !currentlyEnabled;
+    applyToggleState(nextEnabled);
+    chrome.storage.sync.set({ blockSpotifyDeepLinks: nextEnabled });
+  };
+
+  blockDeepLinksToggle.addEventListener('click', toggleBlockDeepLinks);
+  blockDeepLinksToggle.addEventListener('keydown', (e) => {
+    if (e.key === ' ' || e.key === 'Enter') {
+      e.preventDefault();
+      toggleBlockDeepLinks();
+    }
   });
 
   // Focus search input

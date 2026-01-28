@@ -25,6 +25,28 @@ export default function SpotifyNowPlaying({ onTrackSelect, onTrackChange }: Spot
   const clickCountRef = useRef(0);
   const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  const handleShare = async () => {
+    try {
+      const url = nowPlaying?.track?.external_urls?.spotify;
+      if (!url) return;
+
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(url);
+      } else {
+        const textarea = document.createElement('textarea');
+        textarea.value = url;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+      }
+    } catch (error) {
+      console.error('Failed to copy track URL to clipboard', error);
+    }
+  };
+
   const handleNowPlayingClick = () => {
     clickCountRef.current += 1;
 
@@ -206,6 +228,21 @@ export default function SpotifyNowPlaying({ onTrackSelect, onTrackChange }: Spot
               </svg>
             </button>
           )}
+          <button
+            onClick={handleShare}
+            className="p-2 rounded-full text-spotify-lightgray hover:text-white transition-colors"
+            title="Copy track link"
+            aria-label={track ? `Copy link for ${track.name} to clipboard` : 'Copy track link'}
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-4M14 4h4a2 2 0 012 2v8a2 2 0 01-2 2h-4M8 12l8-8"
+              />
+            </svg>
+          </button>
         </div>
       </div>
 

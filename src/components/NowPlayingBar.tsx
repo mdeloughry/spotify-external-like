@@ -56,6 +56,28 @@ export default function NowPlayingBar({ track, isPlaying, onPlayPause, onStop, a
     setVolume(newVolume);
   };
 
+  const handleShareTrack = async () => {
+    try {
+      const url = track?.external_urls?.spotify;
+      if (!url) return;
+
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(url);
+      } else {
+        const textarea = document.createElement('textarea');
+        textarea.value = url;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+      }
+    } catch (error) {
+      console.error('Failed to copy track URL to clipboard', error);
+    }
+  };
+
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
@@ -110,6 +132,21 @@ export default function NowPlayingBar({ track, isPlaying, onPlayPause, onStop, a
               >
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M6 6h12v12H6z" />
+                </svg>
+              </button>
+              <button
+                onClick={handleShareTrack}
+                className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-spotify-lightgray hover:text-white transition-colors"
+                title="Copy track link"
+                aria-label={`Copy link for ${track.name} to clipboard`}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-4M14 4h4a2 2 0 012 2v8a2 2 0 01-2 2h-4M8 12l8-8"
+                  />
                 </svg>
               </button>
             </div>

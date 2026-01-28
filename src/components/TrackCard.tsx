@@ -18,6 +18,28 @@ export default function TrackCard({ track, onLikeToggle, onAddToPlaylist, isPlay
   const artists = track.artists.map((a) => a.name).join(', ');
   const hasPreview = !!track.preview_url;
 
+  const handleShareClick = async () => {
+    try {
+      const url = track.external_urls?.spotify;
+      if (!url) return;
+
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(url);
+      } else {
+        const textarea = document.createElement('textarea');
+        textarea.value = url;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+      }
+    } catch (error) {
+      console.error('Failed to copy track URL to clipboard', error);
+    }
+  };
+
   const handleLikeClick = async () => {
     setIsLikeLoading(true);
     try {
@@ -152,6 +174,23 @@ export default function TrackCard({ track, onLikeToggle, onAddToPlaylist, isPlay
                 strokeLinejoin="round"
                 strokeWidth={2}
                 d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+              />
+            </svg>
+          </button>
+
+          {/* Share Button */}
+          <button
+            onClick={handleShareClick}
+            className="p-2.5 sm:p-2 min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 rounded-full text-spotify-lightgray hover:text-white transition-colors flex items-center justify-center"
+            aria-label={`Copy link for ${track.name} to clipboard`}
+            title="Copy track link"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-4M14 4h4a2 2 0 012 2v8a2 2 0 01-2 2h-4M8 12l8-8"
               />
             </svg>
           </button>

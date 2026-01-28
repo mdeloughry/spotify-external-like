@@ -337,7 +337,7 @@ export default function SearchApp({ initialQuery }: SearchAppProps) {
   };
 
   return (
-    <div className="relative space-y-6 pb-28 rounded-3xl border border-white/8 bg-black/50 backdrop-blur-2xl px-5 py-6 sm:px-8 sm:py-7 shadow-[0_26px_90px_rgba(0,0,0,0.85)]">
+    <div className="relative flex flex-col space-y-6 rounded-3xl border border-white/8 bg-black/50 backdrop-blur-2xl px-5 py-6 sm:px-8 sm:py-7 shadow-[0_26px_90px_rgba(0,0,0,0.85)] max-h-[calc(100vh-7rem)] overflow-hidden">
       {/* Live region for screen reader announcements */}
       <div
         role="status"
@@ -438,48 +438,55 @@ export default function SearchApp({ initialQuery }: SearchAppProps) {
         onTrackChange={setSpotifyCurrentTrack}
       />
 
-      <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
-        {/* Main content */}
-        <div className="flex-1">
-          {hasSearched && !isLoading && !error && (
-            <TrackList
-              tracks={tracks}
-              onLikeToggle={handleLikeToggle}
-              onAddToPlaylist={setSelectedTrack}
-              playingTrackId={playingTrackId}
-              onPlayToggle={handlePlayToggle}
-            />
-          )}
+      {/* Main content area fills remaining card height and scrolls internally */}
+      <div className="flex-1 min-h-0">
+        <div className="flex flex-col gap-8 lg:flex-row lg:items-start h-full min-h-0">
+          {/* Track list column (scrollable) */}
+          <div className="flex-1 min-h-0">
+            <div className="h-full min-h-0 overflow-y-auto pr-1 pb-28">
+              {hasSearched && !isLoading && !error && (
+                <TrackList
+                  tracks={tracks}
+                  onLikeToggle={handleLikeToggle}
+                  onAddToPlaylist={setSelectedTrack}
+                  playingTrackId={playingTrackId}
+                  onPlayToggle={handlePlayToggle}
+                />
+              )}
 
-          {!hasSearched && (
-            <div className="text-center py-12 text-spotify-lightgray">
-              <p>Search for a track to get started</p>
-              <p className="text-sm mt-2">Press <kbd className="px-1.5 py-0.5 bg-spotify-gray/50 rounded">/</kbd> to focus search</p>
-              <p className="text-sm mt-4 text-spotify-lightgray/60">
-                Tip: Paste a YouTube, SoundCloud, Spotify, or most other music links to find them on
-                Spotify
-              </p>
+              {!hasSearched && (
+                <div className="text-center py-12 text-spotify-lightgray">
+                  <p>Search for a track to get started</p>
+                  <p className="text-sm mt-2">
+                    Press <kbd className="px-1.5 py-0.5 bg-spotify-gray/50 rounded">/</kbd> to focus search
+                  </p>
+                  <p className="text-sm mt-4 text-spotify-lightgray/60">
+                    Tip: Paste a YouTube, SoundCloud, Spotify, or most other music links to find them on
+                    Spotify
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Sidebar (sticks within card, does not scroll independently) */}
+          {(recentActions.length > 0 || spotifyCurrentTrack) && (
+            <div className="mt-4 flex flex-col gap-4 lg:mt-0 lg:w-80 flex-shrink-0">
+              {/* Recent Activity */}
+              {recentActions.length > 0 && (
+                <RecentActivity actions={recentActions} onClear={() => setRecentActions([])} />
+              )}
+
+              {/* Recommendations based on Spotify now playing */}
+              {spotifyCurrentTrack && (
+                <SidebarRecommendations
+                  currentTrack={spotifyCurrentTrack}
+                  onTrackSelect={setSelectedTrack}
+                />
+              )}
             </div>
           )}
         </div>
-
-        {/* Sidebar */}
-        {(recentActions.length > 0 || spotifyCurrentTrack) && (
-          <div className="mt-4 flex flex-col gap-4 lg:mt-0 lg:w-80">
-            {/* Recent Activity */}
-            {recentActions.length > 0 && (
-              <RecentActivity actions={recentActions} onClear={() => setRecentActions([])} />
-            )}
-
-            {/* Recommendations based on Spotify now playing */}
-            {spotifyCurrentTrack && (
-              <SidebarRecommendations
-                currentTrack={spotifyCurrentTrack}
-                onTrackSelect={setSelectedTrack}
-              />
-            )}
-          </div>
-        )}
       </div>
 
       {selectedTrack && (

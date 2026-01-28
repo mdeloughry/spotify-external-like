@@ -1,46 +1,19 @@
-import type { APIRoute } from 'astro';
 import { searchTracks, checkSavedTracks } from '../../lib/spotify';
-import {
-  getAuthenticatedToken,
-  checkRateLimit,
-  getClientIdentifier,
-  validateSearchQuery,
-  rateLimitResponse,
-  errorResponse,
-  log,
-} from '../../lib/api-utils';
+import { withApiHandler, validateSearchQuery, errorResponse } from '../../lib/api-utils';
+import { RATE_LIMIT, API_PATHS } from '../../lib/constants';
 
-export const GET: APIRoute = async ({ request }) => {
-  const startTime = Date.now();
-  const path = '/api/search';
-  const url = new URL(request.url);
-  const query = url.searchParams.get('q');
+export const GET = withApiHandler(
+  async ({ context, token, headers, logger }) => {
+    const url = new URL(context.request.url);
+    const query = url.searchParams.get('q');
 
-  // Rate limiting
-  const clientId = getClientIdentifier(request);
-  const rateLimit = checkRateLimit(`search:${clientId}`, { windowMs: 60000, maxRequests: 60 });
-  if (!rateLimit.allowed) {
-    log({ level: 'warn', method: 'GET', path, clientId, error: 'Rate limited' });
-    return rateLimitResponse(rateLimit.resetIn);
-  }
+    // Validation
+    const validation = validateSearchQuery(query);
+    if (!validation.valid) {
+      logger.info(400);
+      return errorResponse(validation.error!, 400);
+    }
 
-  // Validation
-  const validation = validateSearchQuery(query);
-  if (!validation.valid) {
-    log({ level: 'info', method: 'GET', path, status: 400, error: validation.error });
-    return errorResponse(validation.error!, 400);
-  }
-
-  // Authentication
-  const authResult = await getAuthenticatedToken(request);
-  if (!authResult.success) {
-    log({ level: 'info', method: 'GET', path, status: 401, duration: Date.now() - startTime });
-    return authResult.response;
-  }
-
-  const { token, headers } = authResult.data;
-
-  try {
     const searchResults = await searchTracks(query!, token);
 
     // Check which tracks are already liked
@@ -57,7 +30,7 @@ export const GET: APIRoute = async ({ request }) => {
       isLiked: likedStatus[index] || false,
     }));
 
-    log({ level: 'info', method: 'GET', path, status: 200, duration: Date.now() - startTime });
+    logger.info(200);
     return new Response(
       JSON.stringify({
         tracks: tracksWithLiked,
@@ -65,9 +38,10 @@ export const GET: APIRoute = async ({ request }) => {
       }),
       { headers }
     );
-  } catch (err) {
-    const errorMessage = err instanceof Error ? err.message : 'Search failed';
-    log({ level: 'error', method: 'GET', path, status: 500, duration: Date.now() - startTime, error: errorMessage });
-    return errorResponse(errorMessage, 500);
+  },
+  {
+    path: API_PATHS.SEARCH,
+    method: 'GET',
+    rateLimit: RATE_LIMIT.SEARCH,
   }
-};
+);

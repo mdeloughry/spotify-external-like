@@ -1,44 +1,20 @@
-import type { APIRoute } from 'astro';
 import { getCurrentlyPlaying, checkSavedTracks } from '../../lib/spotify';
-import {
-  getAuthenticatedToken,
-  checkRateLimit,
-  getClientIdentifier,
-  rateLimitResponse,
-  errorResponse,
-  log,
-} from '../../lib/api-utils';
+import { withApiHandler } from '../../lib/api-utils';
+import { RATE_LIMIT, API_PATHS } from '../../lib/constants';
 
-export const GET: APIRoute = async ({ request }) => {
-  const startTime = Date.now();
-  const path = '/api/now-playing';
-
-  // Rate limiting (allow frequent polling)
-  const clientId = getClientIdentifier(request);
-  const rateLimit = checkRateLimit(`now-playing:${clientId}`, { windowMs: 60000, maxRequests: 120 });
-  if (!rateLimit.allowed) {
-    log({ level: 'warn', method: 'GET', path, clientId, error: 'Rate limited' });
-    return rateLimitResponse(rateLimit.resetIn);
-  }
-
-  // Authentication
-  const authResult = await getAuthenticatedToken(request);
-  if (!authResult.success) {
-    return authResult.response;
-  }
-
-  const { token, headers } = authResult.data;
-
-  try {
+export const GET = withApiHandler(
+  async ({ token, headers, logger }) => {
     const nowPlaying = await getCurrentlyPlaying(token);
 
     if (!nowPlaying || !nowPlaying.item || nowPlaying.currently_playing_type !== 'track') {
+      logger.info(200);
       return new Response(JSON.stringify({ playing: false }), { status: 200, headers });
     }
 
     // Check if track is liked
     const [isLiked] = await checkSavedTracks([nowPlaying.item.id], token);
 
+    logger.info(200);
     return new Response(JSON.stringify({
       playing: true,
       is_playing: nowPlaying.is_playing,
@@ -48,9 +24,10 @@ export const GET: APIRoute = async ({ request }) => {
         isLiked,
       },
     }), { status: 200, headers });
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Failed to fetch now playing';
-    log({ level: 'error', method: 'GET', path, status: 500, duration: Date.now() - startTime, error: errorMessage });
-    return errorResponse(errorMessage, 500);
+  },
+  {
+    path: API_PATHS.NOW_PLAYING,
+    method: 'GET',
+    rateLimit: RATE_LIMIT.NOW_PLAYING,
   }
-};
+);

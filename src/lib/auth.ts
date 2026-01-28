@@ -1,3 +1,5 @@
+import { COOKIES } from './constants';
+
 const SPOTIFY_AUTH_URL = 'https://accounts.spotify.com/authorize';
 const SPOTIFY_TOKEN_URL = 'https://accounts.spotify.com/api/token';
 
@@ -104,10 +106,10 @@ export function parseCookies(cookieHeader: string | null): Record<string, string
 
 export function getTokenFromCookies(cookieHeader: string | null): string | null {
   const cookies = parseCookies(cookieHeader);
-  return cookies['spotify_access_token'] || null;
+  return cookies[COOKIES.ACCESS_TOKEN] || null;
 }
 
 export function getRefreshTokenFromCookies(cookieHeader: string | null): string | null {
   const cookies = parseCookies(cookieHeader);
-  return cookies['spotify_refresh_token'] || null;
+  return cookies[COOKIES.REFRESH_TOKEN] || null;
 }

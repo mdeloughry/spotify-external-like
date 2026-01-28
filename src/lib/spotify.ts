@@ -153,6 +153,43 @@ export function formatDuration(ms: number): string {
   return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 }
 
+/**
+ * Get the best album image URL for a given size preference
+ * Spotify returns images in different sizes: large (640), medium (300), small (64)
+ * @param album - The Spotify album object
+ * @param preferredSize - The preferred image size
+ * @returns The image URL or null if no images available
+ */
+export function getAlbumImageUrl(
+  album: SpotifyAlbum,
+  preferredSize: 'small' | 'medium' | 'large' = 'medium'
+): string | null {
+  if (!album.images || album.images.length === 0) {
+    return null;
+  }
+
+  // Spotify typically returns images in order: large, medium, small
+  // Index mapping: large = 0, medium = 1, small = 2
+  const sizeIndexMap = { large: 0, medium: 1, small: 2 };
+  const preferredIndex = sizeIndexMap[preferredSize];
+
+  // Try to get preferred size, fall back to next available
+  return (
+    album.images[preferredIndex]?.url ||
+    album.images[0]?.url ||
+    null
+  );
+}
+
+/**
+ * Format artists array into a comma-separated string
+ * @param artists - Array of Spotify artist objects
+ * @returns Comma-separated artist names
+ */
+export function formatArtists(artists: SpotifyArtist[]): string {
+  return artists.map((a) => a.name).join(', ');
+}
+
 export interface ArtistTopTracksResponse {
   tracks: SpotifyTrack[];
 }
@@ -179,45 +216,6 @@ export async function getRelatedArtists(
   token: string
 ): Promise<RelatedArtistsResponse> {
   return spotifyFetch<RelatedArtistsResponse>(`/artists/${artistId}/related-artists`, token);
-}
-
-// Extract track info from various URL formats
-export function parseTrackUrl(url: string): { platform: string; query: string } | null {
-  try {
-    const urlObj = new URL(url);
-
-    // YouTube
-    if (urlObj.hostname.includes('youtube.com') || urlObj.hostname.includes('youtu.be')) {
-      // Extract video title from URL if possible, otherwise return the video ID
-      const videoId = urlObj.hostname.includes('youtu.be')
-        ? urlObj.pathname.slice(1)
-        : urlObj.searchParams.get('v');
-      if (videoId) {
-        return { platform: 'youtube', query: videoId };
-      }
-    }
-
-    // SoundCloud
-    if (urlObj.hostname.includes('soundcloud.com')) {
-      const parts = urlObj.pathname.split('/').filter(Boolean);
-      if (parts.length >= 2) {
-        // Format: /artist/track-name -> "artist track-name"
-        return { platform: 'soundcloud', query: parts.join(' ').replace(/-/g, ' ') };
-      }
-    }
-
-    // Spotify (in case someone pastes a Spotify URL)
-    if (urlObj.hostname.includes('spotify.com')) {
-      const match = urlObj.pathname.match(/track\/([a-zA-Z0-9]+)/);
-      if (match) {
-        return { platform: 'spotify', query: match[1] };
-      }
-    }
-
-    return null;
-  } catch {
-    return null;
-  }
 }
 
 export async function getTrackById(trackId: string, token: string): Promise<SpotifyTrack> {

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import * as THREE from 'three';
 
 interface PsychedelicVisualizerProps {
@@ -243,8 +244,6 @@ export default function PsychedelicVisualizer({ audioElement, onClose }: Psyched
 
     // Animation
     let time = 0;
-    let colorIndex = 0;
-    let colorTransition = 0;
 
     const animate = () => {
       frameRef.current = requestAnimationFrame(animate);
@@ -269,27 +268,28 @@ export default function PsychedelicVisualizer({ audioElement, onClose }: Psyched
         treble = 0.5 + Math.sin(time * 5) * 0.25;
       }
 
-      // Color cycling
-      colorTransition += 0.005;
-      if (colorTransition >= 1) {
-        colorTransition = 0;
-        colorIndex = (colorIndex + 1) % colors.length;
-      }
+      // Color cycling – continuous, seamless loop around the palette (~60s per full orbit)
+      const loopSpeed = 0.1; // paletteSize / loopSpeed ≈ 60s when paletteSize = 6
+      const paletteSize = colors.length;
+      const phase = (time * loopSpeed) % paletteSize;
+      const baseIndex = Math.floor(phase);
+      const mix = phase - baseIndex;
 
-      const currentColor = colors[colorIndex];
-      const nextColor = colors[(colorIndex + 1) % colors.length];
+      const c0 = colors[baseIndex];
+      const c1 = colors[(baseIndex + 1) % paletteSize];
+      const c2 = colors[(baseIndex + 2) % paletteSize];
+      const c3 = colors[(baseIndex + 3) % paletteSize];
+
+      const colorA = new THREE.Color().lerpColors(c0, c1, mix);
+      const colorB = new THREE.Color().lerpColors(c2, c3, mix);
 
       // Update blob
       blobMaterial.uniforms.uTime.value = time;
       blobMaterial.uniforms.uBass.value = bass;
       blobMaterial.uniforms.uMid.value = mid;
       blobMaterial.uniforms.uTreble.value = treble;
-      blobMaterial.uniforms.uColor1.value.lerpColors(currentColor, nextColor, colorTransition);
-      blobMaterial.uniforms.uColor2.value.lerpColors(
-        colors[(colorIndex + 2) % colors.length],
-        colors[(colorIndex + 3) % colors.length],
-        colorTransition
-      );
+      blobMaterial.uniforms.uColor1.value.copy(colorA);
+      blobMaterial.uniforms.uColor2.value.copy(colorB);
 
       blob.rotation.x += 0.005 + bass * 0.02;
       blob.rotation.y += 0.007 + mid * 0.02;
@@ -343,7 +343,12 @@ export default function PsychedelicVisualizer({ audioElement, onClose }: Psyched
     };
   }, [audioElement, onClose, cleanup]);
 
-  return (
+  // Render into document.body so we escape any layout/overflow clipping and truly cover the viewport
+  if (typeof document === 'undefined') {
+    return null;
+  }
+
+  return createPortal(
     <div
       ref={containerRef}
       className="fixed inset-0 z-[100] bg-black cursor-pointer"
@@ -379,7 +384,7 @@ export default function PsychedelicVisualizer({ audioElement, onClose }: Psyched
             backgroundSize: '300% 100%',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
-            animation: 'gradient 3s linear infinite',
+            animation: 'gradient 10s linear infinite',
           }}
         >
           SPILLOVER
@@ -395,6 +400,7 @@ export default function PsychedelicVisualizer({ audioElement, onClose }: Psyched
           100% { background-position: 300% 50%; }
         }
       `}</style>
-    </div>
+    </div>,
+    document.body
   );
 }

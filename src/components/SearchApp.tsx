@@ -315,7 +315,7 @@ export default function SearchApp({ initialQuery }: SearchAppProps) {
   };
 
   return (
-    <div className="space-y-8 pb-32">
+    <div className="relative space-y-6 pb-28 rounded-3xl border border-white/8 bg-black/50 backdrop-blur-2xl px-5 py-6 sm:px-8 sm:py-7 shadow-[0_26px_90px_rgba(0,0,0,0.85)]">
       {/* Search with history dropdown */}
       <div className="relative">
         <SearchBar
@@ -355,7 +355,7 @@ export default function SearchApp({ initialQuery }: SearchAppProps) {
       </div>
 
       {/* Keyboard shortcuts hint */}
-      <div className="flex justify-center gap-4 text-xs text-spotify-lightgray">
+      <div className="hidden sm:flex justify-center gap-4 text-[0.68rem] text-spotify-lightgray/85">
         <span><kbd className="px-1.5 py-0.5 bg-spotify-gray/50 rounded">/</kbd> Search</span>
         <span><kbd className="px-1.5 py-0.5 bg-spotify-gray/50 rounded">L</kbd> Like first</span>
       </div>
@@ -384,7 +384,7 @@ export default function SearchApp({ initialQuery }: SearchAppProps) {
         onTrackChange={setSpotifyCurrentTrack}
       />
 
-      <div className="flex gap-8">
+      <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
         {/* Main content */}
         <div className="flex-1">
           {hasSearched && !isLoading && !error && (
@@ -410,7 +410,7 @@ export default function SearchApp({ initialQuery }: SearchAppProps) {
 
         {/* Sidebar */}
         {(recentActions.length > 0 || spotifyCurrentTrack) && (
-          <div className="flex flex-col gap-4">
+          <div className="mt-4 flex flex-col gap-4 lg:mt-0 lg:w-80">
             {/* Recent Activity */}
             {recentActions.length > 0 && (
               <RecentActivity actions={recentActions} onClear={() => setRecentActions([])} />

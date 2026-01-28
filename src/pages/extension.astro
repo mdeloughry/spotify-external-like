@@ -1,298 +1,441 @@
 ---
-import Layout from '../layouts/Layout.astro';
+import Layout from "../layouts/Layout.astro";
 ---
 
-<Layout title="Spillover - Browser Extension">
-  <div class="min-h-screen flex flex-col">
-    <!-- Header -->
-    <header class="border-b border-spotify-gray/20">
-      <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-        <a href="/" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
-          <svg class="w-8 h-8" viewBox="0 0 32 32" fill="none">
-            <circle cx="16" cy="16" r="15" stroke="url(#spillover-gradient)" stroke-width="2"/>
-            <path d="M10 20C10 20 12 12 16 12C20 12 22 20 22 20" stroke="url(#spillover-gradient)" stroke-width="2.5" stroke-linecap="round"/>
-            <circle cx="10" cy="20" r="3" fill="url(#spillover-gradient)"/>
-            <circle cx="22" cy="20" r="3" fill="url(#spillover-gradient)"/>
-            <path d="M16 8V12" stroke="url(#spillover-gradient)" stroke-width="2" stroke-linecap="round"/>
-            <path d="M13 6L16 8L19 6" stroke="url(#spillover-gradient)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <defs>
-              <linearGradient id="spillover-gradient" x1="0" y1="0" x2="32" y2="32">
-                <stop offset="0%" stop-color="#22c55e"/>
-                <stop offset="100%" stop-color="#16a34a"/>
-              </linearGradient>
-            </defs>
-          </svg>
-          <h1 class="text-xl font-bold">Spillover</h1>
-        </a>
-        <a href="/" class="text-sm text-spotify-lightgray hover:text-white transition-colors">
-          Back to App
-        </a>
-      </div>
-    </header>
-
-    <!-- Main Content -->
-    <main class="flex-grow">
-      <div class="max-w-3xl mx-auto px-4 py-12">
-        <!-- Hero -->
-        <div class="text-center mb-12">
-          <div class="inline-flex items-center gap-2 px-3 py-1 bg-spotify-green/10 border border-spotify-green/20 rounded-full text-spotify-green text-sm mb-6">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
-            </svg>
-            Browser Extension
-          </div>
-          <h2 class="text-4xl font-bold mb-4">Save Tracks From Anywhere</h2>
-          <p class="text-xl text-spotify-lightgray">
-            Right-click any text or link to instantly search and save to your Spotify library.
-          </p>
-        </div>
-
-        <!-- Features -->
-        <div class="grid md:grid-cols-2 gap-6 mb-12">
-          <div class="bg-spotify-gray/10 rounded-xl p-6 border border-spotify-gray/20">
-            <div class="w-12 h-12 bg-spotify-green/20 rounded-lg flex items-center justify-center mb-4">
-              <svg class="w-6 h-6 text-spotify-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
-              </svg>
-            </div>
-            <h3 class="font-semibold text-lg mb-2">Right-Click Search</h3>
-            <p class="text-spotify-lightgray text-sm">
-              Select any text on a webpage, right-click, and choose "Search on Spillover" to find it on Spotify instantly.
-            </p>
-          </div>
-
-          <div class="bg-spotify-gray/10 rounded-xl p-6 border border-spotify-gray/20">
-            <div class="w-12 h-12 bg-spotify-green/20 rounded-lg flex items-center justify-center mb-4">
-              <svg class="w-6 h-6 text-spotify-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-              </svg>
-            </div>
-            <h3 class="font-semibold text-lg mb-2">Import Links</h3>
-            <p class="text-spotify-lightgray text-sm">
-              Right-click any YouTube or SoundCloud link and choose "Import to Spillover" to find the track on Spotify.
-            </p>
-          </div>
-
-          <div class="bg-spotify-gray/10 rounded-xl p-6 border border-spotify-gray/20">
-            <div class="w-12 h-12 bg-spotify-green/20 rounded-lg flex items-center justify-center mb-4">
-              <svg class="w-6 h-6 text-spotify-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
-              </svg>
-            </div>
-            <h3 class="font-semibold text-lg mb-2">Quick Popup</h3>
-            <p class="text-spotify-lightgray text-sm">
-              Click the extension icon to open a popup where you can type and search directly without leaving your current page.
-            </p>
-          </div>
-
-          <div class="bg-spotify-gray/10 rounded-xl p-6 border border-spotify-gray/20">
-            <div class="w-12 h-12 bg-spotify-green/20 rounded-lg flex items-center justify-center mb-4">
-              <svg class="w-6 h-6 text-spotify-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </div>
-            <h3 class="font-semibold text-lg mb-2">Configurable</h3>
-            <p class="text-spotify-lightgray text-sm">
-              Set a custom App URL if you're running Spillover on a different port or server.
-            </p>
-          </div>
-        </div>
-
-        <!-- Configuration for Hosted App -->
-        <div class="mb-12 bg-gradient-to-r from-blue-500/10 to-transparent rounded-xl border border-blue-500/20 p-6">
-          <h3 class="text-xl font-bold mb-3 flex items-center gap-2">
-            <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            Configure for This Site
-          </h3>
-          <p class="text-spotify-lightgray text-sm mb-4">
-            After installing the extension, update the App URL in the extension popup to point to this site:
-          </p>
-          <div class="flex items-center gap-2">
-            <code id="siteUrl" class="flex-grow px-4 py-2 bg-spotify-black rounded-lg text-spotify-green font-mono text-sm"></code>
-            <button
-              id="copyUrl"
-              class="px-4 py-2 bg-spotify-gray/30 hover:bg-spotify-gray/50 rounded-lg text-sm transition-colors flex items-center gap-2"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-              </svg>
-              <span id="copyText">Copy</span>
-            </button>
-          </div>
-        </div>
-
-        <script>
-          const siteUrl = window.location.origin;
-          document.getElementById('siteUrl').textContent = siteUrl;
-
-          document.getElementById('copyUrl').addEventListener('click', async () => {
-            await navigator.clipboard.writeText(siteUrl);
-            const copyText = document.getElementById('copyText');
-            copyText.textContent = 'Copied!';
-            setTimeout(() => copyText.textContent = 'Copy', 2000);
-          });
-        </script>
-
-        <!-- Installation Steps -->
-        <div class="mb-12">
-          <h3 class="text-2xl font-bold mb-6">Installation</h3>
-
-          <div class="space-y-4">
-            <div class="flex gap-4">
-              <div class="flex-shrink-0 w-8 h-8 bg-spotify-green rounded-full flex items-center justify-center font-bold text-black">
-                1
-              </div>
-              <div class="flex-grow pt-1">
-                <h4 class="font-semibold mb-1">Download the extension</h4>
-                <p class="text-spotify-lightgray text-sm mb-3">
-                  Download and extract the extension files, or clone the repository.
-                </p>
-                <a
-                  href="/extension.zip"
-                  class="inline-flex items-center gap-2 px-4 py-2 bg-spotify-gray/30 hover:bg-spotify-gray/50 rounded-lg text-sm transition-colors"
-                  download
-                >
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                  </svg>
-                  Download Extension
-                </a>
-              </div>
-            </div>
-
-            <div class="flex gap-4">
-              <div class="flex-shrink-0 w-8 h-8 bg-spotify-green rounded-full flex items-center justify-center font-bold text-black">
-                2
-              </div>
-              <div class="flex-grow pt-1">
-                <h4 class="font-semibold mb-1">Open Chrome Extensions</h4>
-                <p class="text-spotify-lightgray text-sm">
-                  Navigate to <code class="px-2 py-0.5 bg-spotify-gray/30 rounded text-spotify-green">chrome://extensions</code> in your browser.
-                </p>
-              </div>
-            </div>
-
-            <div class="flex gap-4">
-              <div class="flex-shrink-0 w-8 h-8 bg-spotify-green rounded-full flex items-center justify-center font-bold text-black">
-                3
-              </div>
-              <div class="flex-grow pt-1">
-                <h4 class="font-semibold mb-1">Enable Developer Mode</h4>
-                <p class="text-spotify-lightgray text-sm">
-                  Toggle the "Developer mode" switch in the top right corner of the extensions page.
-                </p>
-              </div>
-            </div>
-
-            <div class="flex gap-4">
-              <div class="flex-shrink-0 w-8 h-8 bg-spotify-green rounded-full flex items-center justify-center font-bold text-black">
-                4
-              </div>
-              <div class="flex-grow pt-1">
-                <h4 class="font-semibold mb-1">Load the extension</h4>
-                <p class="text-spotify-lightgray text-sm">
-                  Click "Load unpacked" and select the <code class="px-2 py-0.5 bg-spotify-gray/30 rounded">extension</code> folder.
-                </p>
-              </div>
-            </div>
-
-            <div class="flex gap-4">
-              <div class="flex-shrink-0 w-8 h-8 bg-spotify-green rounded-full flex items-center justify-center font-bold text-black">
-                5
-              </div>
-              <div class="flex-grow pt-1">
-                <h4 class="font-semibold mb-1">Configure the App URL</h4>
-                <p class="text-spotify-lightgray text-sm">
-                  Click the Spillover extension icon, then update the "App URL" field at the bottom to match your Spillover instance. Copy the URL from the blue box above.
-                </p>
-              </div>
-            </div>
-
-            <div class="flex gap-4">
-              <div class="flex-shrink-0 w-8 h-8 bg-spotify-green rounded-full flex items-center justify-center font-bold text-black">
-                6
-              </div>
-              <div class="flex-grow pt-1">
-                <h4 class="font-semibold mb-1">Start using!</h4>
-                <p class="text-spotify-lightgray text-sm">
-                  You're all set! Right-click any text or link to search on Spillover.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Usage -->
-        <div class="mb-12">
-          <h3 class="text-2xl font-bold mb-6">How to Use</h3>
-
-          <div class="space-y-6">
-            <div class="bg-spotify-gray/10 rounded-xl p-6 border border-spotify-gray/20">
-              <h4 class="font-semibold mb-3 flex items-center gap-2">
-                <span class="px-2 py-0.5 bg-spotify-green/20 text-spotify-green text-xs rounded">Method 1</span>
-                Search Selected Text
-              </h4>
-              <ol class="text-spotify-lightgray text-sm space-y-2 list-decimal list-inside">
-                <li>Select any text on a webpage (e.g., a song title and artist name)</li>
-                <li>Right-click to open the context menu</li>
-                <li>Click "Search on Spillover"</li>
-                <li>Spillover opens with search results ready to save</li>
-              </ol>
-            </div>
-
-            <div class="bg-spotify-gray/10 rounded-xl p-6 border border-spotify-gray/20">
-              <h4 class="font-semibold mb-3 flex items-center gap-2">
-                <span class="px-2 py-0.5 bg-spotify-green/20 text-spotify-green text-xs rounded">Method 2</span>
-                Import from YouTube/SoundCloud
-              </h4>
-              <ol class="text-spotify-lightgray text-sm space-y-2 list-decimal list-inside">
-                <li>Find a YouTube or SoundCloud link</li>
-                <li>Right-click the link</li>
-                <li>Click "Import to Spillover"</li>
-                <li>Spillover extracts the track info and searches Spotify</li>
-              </ol>
-            </div>
-
-            <div class="bg-spotify-gray/10 rounded-xl p-6 border border-spotify-gray/20">
-              <h4 class="font-semibold mb-3 flex items-center gap-2">
-                <span class="px-2 py-0.5 bg-spotify-green/20 text-spotify-green text-xs rounded">Method 3</span>
-                Quick Search via Popup
-              </h4>
-              <ol class="text-spotify-lightgray text-sm space-y-2 list-decimal list-inside">
-                <li>Click the Spillover icon in your browser toolbar</li>
-                <li>Type your search query</li>
-                <li>Press Enter or click "Go"</li>
-                <li>Spillover opens with your search results</li>
-              </ol>
-            </div>
-          </div>
-        </div>
-
-        <!-- CTA -->
-        <div class="text-center bg-gradient-to-r from-spotify-green/10 to-transparent rounded-xl border border-spotify-green/20 p-8">
-          <h3 class="text-xl font-bold mb-2">Ready to start saving tracks?</h3>
-          <p class="text-spotify-lightgray mb-6">Make sure you're logged in to Spillover first.</p>
-          <a
-            href="/"
-            class="inline-flex items-center gap-2 px-6 py-3 bg-spotify-green text-black font-bold rounded-full hover:bg-spotify-green/90 hover:scale-105 transition-all"
+<Layout
+  title="Spillover - Browser Extension"
+  showBackLink={true}
+  backHref="/"
+  backLabel="Back to app"
+>
+  <!-- Main Content -->
+  <div class="flex-1">
+    <div class="max-w-3xl mx-auto px-4 py-12">
+      <!-- Hero -->
+      <div class="text-center mb-12">
+        <div
+          class="inline-flex items-center gap-2 px-3 py-1 bg-spotify-green/10 border border-spotify-green/20 rounded-full text-spotify-green text-sm mb-6"
+        >
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
           >
-            Open Spillover
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
+            ></path>
+          </svg>
+          Browser Extension
+        </div>
+        <h2 class="text-4xl font-bold mb-4">Save Tracks From Anywhere</h2>
+        <p class="text-xl text-spotify-lightgray">
+          Right-click any text or link to instantly search and save to your
+          Spotify library.
+        </p>
+      </div>
+
+      <!-- Features -->
+      <div class="grid md:grid-cols-2 gap-6 mb-12">
+        <div
+          class="bg-spotify-gray/10 rounded-xl p-6 border border-spotify-gray/20"
+        >
+          <div
+            class="w-12 h-12 bg-spotify-green/20 rounded-lg flex items-center justify-center mb-4"
+          >
+            <svg
+              class="w-6 h-6 text-spotify-green"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"
+              ></path>
             </svg>
-          </a>
+          </div>
+          <h3 class="font-semibold text-lg mb-2">Right-Click Search</h3>
+          <p class="text-spotify-lightgray text-sm">
+            Select any text on a webpage, right-click, and choose "Search on
+            Spillover" to find it on Spotify instantly.
+          </p>
+        </div>
+
+        <div
+          class="bg-spotify-gray/10 rounded-xl p-6 border border-spotify-gray/20"
+        >
+          <div
+            class="w-12 h-12 bg-spotify-green/20 rounded-lg flex items-center justify-center mb-4"
+          >
+            <svg
+              class="w-6 h-6 text-spotify-green"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+              ></path>
+            </svg>
+          </div>
+          <h3 class="font-semibold text-lg mb-2">Import Links</h3>
+          <p class="text-spotify-lightgray text-sm">
+            Right-click any YouTube or SoundCloud link and choose "Import to
+            Spillover" to find the track on Spotify.
+          </p>
+        </div>
+
+        <div
+          class="bg-spotify-gray/10 rounded-xl p-6 border border-spotify-gray/20"
+        >
+          <div
+            class="w-12 h-12 bg-spotify-green/20 rounded-lg flex items-center justify-center mb-4"
+          >
+            <svg
+              class="w-6 h-6 text-spotify-green"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 6h16M4 12h16m-7 6h7"></path>
+            </svg>
+          </div>
+          <h3 class="font-semibold text-lg mb-2">Quick Popup</h3>
+          <p class="text-spotify-lightgray text-sm">
+            Click the extension icon to open a popup where you can type and
+            search directly without leaving your current page.
+          </p>
+        </div>
+
+        <div
+          class="bg-spotify-gray/10 rounded-xl p-6 border border-spotify-gray/20"
+        >
+          <div
+            class="w-12 h-12 bg-spotify-green/20 rounded-lg flex items-center justify-center mb-4"
+          >
+            <svg
+              class="w-6 h-6 text-spotify-green"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+              ></path>
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            </svg>
+          </div>
+          <h3 class="font-semibold text-lg mb-2">Configurable</h3>
+          <p class="text-spotify-lightgray text-sm">
+            Set a custom App URL if you're running Spillover on a different port
+            or server.
+          </p>
         </div>
       </div>
-    </main>
 
-    <!-- Footer -->
-    <footer class="border-t border-spotify-gray/20">
-      <div class="max-w-4xl mx-auto px-4 py-4 text-center text-sm text-spotify-lightgray">
-        <p>Not affiliated with Spotify. Built for personal use.</p>
+      <!-- Configuration for Hosted App -->
+      <div
+        class="mb-12 bg-gradient-to-r from-blue-500/10 to-transparent rounded-xl border border-blue-500/20 p-6"
+      >
+        <h3 class="text-xl font-bold mb-3 flex items-center gap-2">
+          <svg
+            class="w-5 h-5 text-blue-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            ></path>
+          </svg>
+          Configure for This Site
+        </h3>
+        <p class="text-spotify-lightgray text-sm mb-4">
+          After installing the extension, update the App URL in the extension
+          popup to point to this site:
+        </p>
+        <div class="flex items-center gap-2">
+          <code
+            id="siteUrl"
+            class="flex-grow px-4 py-2 bg-spotify-black rounded-lg text-spotify-green font-mono text-sm"
+          ></code>
+          <button
+            id="copyUrl"
+            class="px-4 py-2 bg-spotify-gray/30 hover:bg-spotify-gray/50 rounded-lg text-sm transition-colors flex items-center gap-2"
+          >
+            <svg
+              class="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+              ></path>
+            </svg>
+            <span id="copyText">Copy</span>
+          </button>
+        </div>
       </div>
-    </footer>
+
+      <script>
+        const siteUrl = window.location.origin;
+        document.getElementById("siteUrl").textContent = siteUrl;
+
+        document
+          .getElementById("copyUrl")
+          .addEventListener("click", async () => {
+            await navigator.clipboard.writeText(siteUrl);
+            const copyText = document.getElementById("copyText");
+            copyText.textContent = "Copied!";
+            setTimeout(() => (copyText.textContent = "Copy"), 2000);
+          });
+      </script>
+
+      <!-- Installation Steps -->
+      <div class="mb-12">
+        <h3 class="text-2xl font-bold mb-6">Installation</h3>
+
+        <div class="space-y-4">
+          <div class="flex gap-4">
+            <div
+              class="flex-shrink-0 w-8 h-8 bg-spotify-green rounded-full flex items-center justify-center font-bold text-black"
+            >
+              1
+            </div>
+            <div class="flex-grow pt-1">
+              <h4 class="font-semibold mb-1">Download the extension</h4>
+              <p class="text-spotify-lightgray text-sm mb-3">
+                Download and extract the extension files, or clone the
+                repository.
+              </p>
+              <a
+                href="/extension.zip"
+                class="inline-flex items-center gap-2 px-4 py-2 bg-spotify-gray/30 hover:bg-spotify-gray/50 rounded-lg text-sm transition-colors"
+                download
+              >
+                <svg
+                  class="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                  ></path>
+                </svg>
+                Download Extension
+              </a>
+            </div>
+          </div>
+
+          <div class="flex gap-4">
+            <div
+              class="flex-shrink-0 w-8 h-8 bg-spotify-green rounded-full flex items-center justify-center font-bold text-black"
+            >
+              2
+            </div>
+            <div class="flex-grow pt-1">
+              <h4 class="font-semibold mb-1">Open Chrome Extensions</h4>
+              <p class="text-spotify-lightgray text-sm">
+                Navigate to <code
+                  class="px-2 py-0.5 bg-spotify-gray/30 rounded text-spotify-green"
+                  >chrome://extensions</code
+                > in your browser.
+              </p>
+            </div>
+          </div>
+
+          <div class="flex gap-4">
+            <div
+              class="flex-shrink-0 w-8 h-8 bg-spotify-green rounded-full flex items-center justify-center font-bold text-black"
+            >
+              3
+            </div>
+            <div class="flex-grow pt-1">
+              <h4 class="font-semibold mb-1">Enable Developer Mode</h4>
+              <p class="text-spotify-lightgray text-sm">
+                Toggle the "Developer mode" switch in the top right corner of
+                the extensions page.
+              </p>
+            </div>
+          </div>
+
+          <div class="flex gap-4">
+            <div
+              class="flex-shrink-0 w-8 h-8 bg-spotify-green rounded-full flex items-center justify-center font-bold text-black"
+            >
+              4
+            </div>
+            <div class="flex-grow pt-1">
+              <h4 class="font-semibold mb-1">Load the extension</h4>
+              <p class="text-spotify-lightgray text-sm">
+                Click "Load unpacked" and select the <code
+                  class="px-2 py-0.5 bg-spotify-gray/30 rounded">extension</code
+                > folder.
+              </p>
+            </div>
+          </div>
+
+          <div class="flex gap-4">
+            <div
+              class="flex-shrink-0 w-8 h-8 bg-spotify-green rounded-full flex items-center justify-center font-bold text-black"
+            >
+              5
+            </div>
+            <div class="flex-grow pt-1">
+              <h4 class="font-semibold mb-1">Configure the App URL</h4>
+              <p class="text-spotify-lightgray text-sm">
+                Click the Spillover extension icon, then update the "App URL"
+                field at the bottom to match your Spillover instance. Copy the
+                URL from the blue box above.
+              </p>
+            </div>
+          </div>
+
+          <div class="flex gap-4">
+            <div
+              class="flex-shrink-0 w-8 h-8 bg-spotify-green rounded-full flex items-center justify-center font-bold text-black"
+            >
+              6
+            </div>
+            <div class="flex-grow pt-1">
+              <h4 class="font-semibold mb-1">Start using!</h4>
+              <p class="text-spotify-lightgray text-sm">
+                You're all set! Right-click any text or link to search on
+                Spillover.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Usage -->
+      <div class="mb-12">
+        <h3 class="text-2xl font-bold mb-6">How to Use</h3>
+
+        <div class="space-y-6">
+          <div
+            class="bg-spotify-gray/10 rounded-xl p-6 border border-spotify-gray/20"
+          >
+            <h4 class="font-semibold mb-3 flex items-center gap-2">
+              <span
+                class="px-2 py-0.5 bg-spotify-green/20 text-spotify-green text-xs rounded"
+                >Method 1</span
+              >
+              Search Selected Text
+            </h4>
+            <ol
+              class="text-spotify-lightgray text-sm space-y-2 list-decimal list-inside"
+            >
+              <li>
+                Select any text on a webpage (e.g., a song title and artist
+                name)
+              </li>
+              <li>Right-click to open the context menu</li>
+              <li>Click "Search on Spillover"</li>
+              <li>Spillover opens with search results ready to save</li>
+            </ol>
+          </div>
+
+          <div
+            class="bg-spotify-gray/10 rounded-xl p-6 border border-spotify-gray/20"
+          >
+            <h4 class="font-semibold mb-3 flex items-center gap-2">
+              <span
+                class="px-2 py-0.5 bg-spotify-green/20 text-spotify-green text-xs rounded"
+                >Method 2</span
+              >
+              Import from YouTube/SoundCloud
+            </h4>
+            <ol
+              class="text-spotify-lightgray text-sm space-y-2 list-decimal list-inside"
+            >
+              <li>Find a YouTube or SoundCloud link</li>
+              <li>Right-click the link</li>
+              <li>Click "Import to Spillover"</li>
+              <li>Spillover extracts the track info and searches Spotify</li>
+            </ol>
+          </div>
+
+          <div
+            class="bg-spotify-gray/10 rounded-xl p-6 border border-spotify-gray/20"
+          >
+            <h4 class="font-semibold mb-3 flex items-center gap-2">
+              <span
+                class="px-2 py-0.5 bg-spotify-green/20 text-spotify-green text-xs rounded"
+                >Method 3</span
+              >
+              Quick Search via Popup
+            </h4>
+            <ol
+              class="text-spotify-lightgray text-sm space-y-2 list-decimal list-inside"
+            >
+              <li>Click the Spillover icon in your browser toolbar</li>
+              <li>Type your search query</li>
+              <li>Press Enter or click "Go"</li>
+              <li>Spillover opens with your search results</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <div
+        class="text-center bg-gradient-to-r from-spotify-green/10 to-transparent rounded-xl border border-spotify-green/20 p-8"
+      >
+        <h3 class="text-xl font-bold mb-2">Ready to start saving tracks?</h3>
+        <p class="text-spotify-lightgray mb-6">
+          Make sure you're logged in to Spillover first.
+        </p>
+        <a
+          href="/"
+          class="inline-flex items-center gap-2 px-6 py-3 bg-spotify-green text-black font-bold rounded-full hover:bg-spotify-green/90 hover:scale-105 transition-all"
+        >
+          Open Spillover
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+          </svg>
+        </a>
+      </div>
+    </div>
   </div>
 </Layout>

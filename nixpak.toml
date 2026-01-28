@@ -17,5 +17,4 @@ NODE_ENV = "production"
 # The command you want to run inside the packaged environment.
 # For a purely static deployment you may not need a runtime at all,
 # but for local serving you might run Astro's preview server:
-command = "npm run preview"
-
+command = "npm run preview --omit=dev"

@@ -1,316 +1,515 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import AnalyticsOptOut from '../components/AnalyticsOptOut';
+import Layout from "../layouts/Layout.astro";
+import AnalyticsOptOut from "../components/AnalyticsOptOut";
 ---
 
-<Layout title="Spillover - Privacy">
-  <div class="min-h-screen flex flex-col">
-    <!-- Header -->
-    <header class="border-b border-spotify-gray/20">
-      <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-        <a href="/" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
-          <svg class="w-8 h-8" viewBox="0 0 32 32" fill="none">
-            <circle cx="16" cy="16" r="15" stroke="url(#spillover-gradient)" stroke-width="2"/>
-            <path d="M10 20C10 20 12 12 16 12C20 12 22 20 22 20" stroke="url(#spillover-gradient)" stroke-width="2.5" stroke-linecap="round"/>
-            <circle cx="10" cy="20" r="3" fill="url(#spillover-gradient)"/>
-            <circle cx="22" cy="20" r="3" fill="url(#spillover-gradient)"/>
-            <path d="M16 8V12" stroke="url(#spillover-gradient)" stroke-width="2" stroke-linecap="round"/>
-            <path d="M13 6L16 8L19 6" stroke="url(#spillover-gradient)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <defs>
-              <linearGradient id="spillover-gradient" x1="0" y1="0" x2="32" y2="32">
-                <stop offset="0%" stop-color="#22c55e"/>
-                <stop offset="100%" stop-color="#16a34a"/>
-              </linearGradient>
-            </defs>
-          </svg>
-          <h1 class="text-xl font-bold">Spillover</h1>
-        </a>
-        <a href="/" class="text-sm text-spotify-lightgray hover:text-white transition-colors">
-          Back to App
-        </a>
-      </div>
-    </header>
+<Layout
+  title="Spillover - Privacy"
+  showBackLink={true}
+  backHref="/"
+  backLabel="Back to app"
+>
+  <!-- Main Content -->
+  <div class="flex-1">
+    <div class="max-w-3xl mx-auto px-4 py-12">
+      <h2 class="text-3xl font-bold mb-2">Privacy Policy</h2>
+      <p class="text-spotify-lightgray mb-8">Last updated: January 2025</p>
 
-    <!-- Main Content -->
-    <main class="flex-grow">
-      <div class="max-w-3xl mx-auto px-4 py-12">
-        <h2 class="text-3xl font-bold mb-2">Privacy Policy</h2>
-        <p class="text-spotify-lightgray mb-8">Last updated: January 2025</p>
+      <div class="space-y-8 text-spotify-lightgray">
+        <!-- Summary -->
+        <div
+          class="bg-spotify-green/10 border border-spotify-green/20 rounded-xl p-6"
+        >
+          <h3 class="text-white font-semibold mb-3 flex items-center gap-2">
+            <svg
+              class="w-5 h-5 text-spotify-green"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            TL;DR
+          </h3>
+          <ul class="space-y-2 text-sm">
+            <li class="flex items-start gap-2">
+              <span class="text-spotify-green mt-1">•</span>
+              <span>We don't collect, store, or sell your personal data</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-spotify-green mt-1">•</span>
+              <span
+                >Optional anonymous analytics only - no personal data, no IP
+                addresses</span
+              >
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-spotify-green mt-1">•</span>
+              <span
+                >Your Spotify credentials never touch our servers - only
+                temporary access tokens</span
+              >
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-spotify-green mt-1">•</span>
+              <span>All communication with Spotify uses their official API</span
+              >
+            </li>
+          </ul>
+        </div>
 
-        <div class="space-y-8 text-spotify-lightgray">
-          <!-- Summary -->
-          <div class="bg-spotify-green/10 border border-spotify-green/20 rounded-xl p-6">
-            <h3 class="text-white font-semibold mb-3 flex items-center gap-2">
-              <svg class="w-5 h-5 text-spotify-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        <!-- What We Access -->
+        <section>
+          <h3 class="text-white text-xl font-semibold mb-4">
+            What We Access From Spotify
+          </h3>
+          <p class="mb-4">
+            When you connect your Spotify account, we request permission to:
+          </p>
+          <ul class="space-y-3">
+            <li class="flex items-start gap-3">
+              <div
+                class="w-8 h-8 bg-spotify-gray/30 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+              >
+                <svg
+                  class="w-4 h-4 text-spotify-green"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                  ></path>
+                </svg>
+              </div>
+              <div>
+                <span class="text-white font-medium">Your Liked Songs</span>
+                <p class="text-sm">
+                  To check if tracks are already in your library and to add new
+                  ones
+                </p>
+              </div>
+            </li>
+            <li class="flex items-start gap-3">
+              <div
+                class="w-8 h-8 bg-spotify-gray/30 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+              >
+                <svg
+                  class="w-4 h-4 text-spotify-green"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                  ></path>
+                </svg>
+              </div>
+              <div>
+                <span class="text-white font-medium">Your Playlists</span>
+                <p class="text-sm">
+                  To show your playlists and add tracks to them
+                </p>
+              </div>
+            </li>
+            <li class="flex items-start gap-3">
+              <div
+                class="w-8 h-8 bg-spotify-gray/30 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+              >
+                <svg
+                  class="w-4 h-4 text-spotify-green"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+                  ></path>
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </div>
+              <div>
+                <span class="text-white font-medium">Currently Playing</span>
+                <p class="text-sm">
+                  To show what's playing on your Spotify and suggest similar
+                  tracks
+                </p>
+              </div>
+            </li>
+            <li class="flex items-start gap-3">
+              <div
+                class="w-8 h-8 bg-spotify-gray/30 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+              >
+                <svg
+                  class="w-4 h-4 text-spotify-green"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                  ></path>
+                </svg>
+              </div>
+              <div>
+                <span class="text-white font-medium">Your Profile</span>
+                <p class="text-sm">
+                  Just to show your name and avatar in the header
+                </p>
+              </div>
+            </li>
+          </ul>
+        </section>
+
+        <!-- How Data is Stored -->
+        <section>
+          <h3 class="text-white text-xl font-semibold mb-4">
+            How Data is Stored
+          </h3>
+          <div class="space-y-4">
+            <div
+              class="bg-spotify-gray/10 rounded-lg p-4 border border-spotify-gray/20"
+            >
+              <h4 class="text-white font-medium mb-2">Browser Cookies</h4>
+              <p class="text-sm">
+                We store Spotify access tokens in HTTP-only cookies. These are
+                encrypted, cannot be accessed by JavaScript, and are
+                automatically deleted when you log out or they expire.
+              </p>
+            </div>
+            <div
+              class="bg-spotify-gray/10 rounded-lg p-4 border border-spotify-gray/20"
+            >
+              <h4 class="text-white font-medium mb-2">Local Storage</h4>
+              <p class="text-sm">
+                Your search history is stored locally in your browser. This data
+                never leaves your device and can be cleared at any time using
+                the "Clear" button or by clearing your browser data.
+              </p>
+            </div>
+            <div
+              class="bg-spotify-gray/10 rounded-lg p-4 border border-spotify-gray/20"
+            >
+              <h4 class="text-white font-medium mb-2">Server-Side</h4>
+              <p class="text-sm">
+                We don't maintain any database or persistent storage. No user
+                data, search queries, or listening history is ever stored on our
+                servers.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- What We DON'T Do -->
+        <section>
+          <h3 class="text-white text-xl font-semibold mb-4">
+            What We Don't Do
+          </h3>
+          <div class="grid gap-3">
+            <div class="flex items-center gap-3 text-sm">
+              <svg
+                class="w-5 h-5 text-red-400 flex-shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"></path>
               </svg>
-              TL;DR
-            </h3>
+              <span>We don't use invasive tracking or record your sessions</span
+              >
+            </div>
+            <div class="flex items-center gap-3 text-sm">
+              <svg
+                class="w-5 h-5 text-red-400 flex-shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+              <span>We don't sell or share your data with third parties</span>
+            </div>
+            <div class="flex items-center gap-3 text-sm">
+              <svg
+                class="w-5 h-5 text-red-400 flex-shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+              <span>We don't store your Spotify password (we use OAuth)</span>
+            </div>
+            <div class="flex items-center gap-3 text-sm">
+              <svg
+                class="w-5 h-5 text-red-400 flex-shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+              <span>We don't collect your email or personal information</span>
+            </div>
+            <div class="flex items-center gap-3 text-sm">
+              <svg
+                class="w-5 h-5 text-red-400 flex-shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+              <span>We don't log your searches or listening activity</span>
+            </div>
+            <div class="flex items-center gap-3 text-sm">
+              <svg
+                class="w-5 h-5 text-red-400 flex-shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+              <span>We don't use advertising or marketing cookies</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Third Parties -->
+        <section>
+          <h3 class="text-white text-xl font-semibold mb-4">
+            Third-Party Services
+          </h3>
+          <div
+            class="bg-spotify-gray/10 rounded-lg p-4 border border-spotify-gray/20"
+          >
+            <div class="flex items-center gap-3 mb-3">
+              <svg
+                class="w-6 h-6 text-[#1DB954]"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path
+                  d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"
+                ></path>
+              </svg>
+              <span class="text-white font-medium">Spotify</span>
+            </div>
+            <p class="text-sm">
+              We use the official Spotify Web API to search for tracks, manage
+              your library, and access your playlists. All communication is
+              encrypted and goes directly through Spotify's servers. Your
+              Spotify account is protected by their security measures, and you
+              can revoke Spillover's access at any time from your <a
+                href="https://www.spotify.com/account/apps/"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-spotify-green hover:underline"
+                >Spotify account settings</a
+              >.
+            </p>
+          </div>
+        </section>
+
+        <!-- Analytics -->
+        <section>
+          <h3 class="text-white text-xl font-semibold mb-4">
+            Anonymous Analytics
+          </h3>
+          <div
+            class="bg-spotify-gray/10 rounded-lg p-4 border border-spotify-gray/20 mb-4"
+          >
+            <div class="flex items-center gap-3 mb-3">
+              <svg
+                class="w-6 h-6 text-blue-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                ></path>
+              </svg>
+              <span class="text-white font-medium">PostHog (Optional)</span>
+            </div>
+            <p class="text-sm mb-3">
+              We may use PostHog for basic, anonymous analytics to understand
+              how the app is used. This helps us improve features and fix
+              issues. Here's what you should know:
+            </p>
             <ul class="space-y-2 text-sm">
               <li class="flex items-start gap-2">
-                <span class="text-spotify-green mt-1">•</span>
-                <span>We don't collect, store, or sell your personal data</span>
+                <span class="text-spotify-green mt-0.5">•</span>
+                <span
+                  ><strong class="text-white">No IP addresses</strong> - We explicitly
+                  disable IP collection</span
+                >
               </li>
               <li class="flex items-start gap-2">
-                <span class="text-spotify-green mt-1">•</span>
-                <span>Optional anonymous analytics only - no personal data, no IP addresses</span>
+                <span class="text-spotify-green mt-0.5">•</span>
+                <span
+                  ><strong class="text-white">No session recordings</strong> - We
+                  don't record your screen or interactions</span
+                >
               </li>
               <li class="flex items-start gap-2">
-                <span class="text-spotify-green mt-1">•</span>
-                <span>Your Spotify credentials never touch our servers - only temporary access tokens</span>
+                <span class="text-spotify-green mt-0.5">•</span>
+                <span
+                  ><strong class="text-white">No auto-capture</strong> - We only track
+                  page views, not clicks or form inputs</span
+                >
               </li>
               <li class="flex items-start gap-2">
-                <span class="text-spotify-green mt-1">•</span>
-                <span>All communication with Spotify uses their official API</span>
+                <span class="text-spotify-green mt-0.5">•</span>
+                <span
+                  ><strong class="text-white">Anonymous by default</strong> - Only
+                  aggregate usage data, no personal profiles</span
+                >
               </li>
             </ul>
           </div>
+          <p class="text-sm mb-4">
+            Analytics are optional and only enabled if the site operator
+            configures it. Self-hosted instances can run without any analytics.
+          </p>
+          <div class="mt-4">
+            <p class="text-white text-sm font-medium mb-2">Your Preference</p>
+            <AnalyticsOptOut client:load />
+          </div>
+        </section>
 
-          <!-- What We Access -->
-          <section>
-            <h3 class="text-white text-xl font-semibold mb-4">What We Access From Spotify</h3>
-            <p class="mb-4">
-              When you connect your Spotify account, we request permission to:
-            </p>
-            <ul class="space-y-3">
-              <li class="flex items-start gap-3">
-                <div class="w-8 h-8 bg-spotify-gray/30 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <svg class="w-4 h-4 text-spotify-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                  </svg>
-                </div>
-                <div>
-                  <span class="text-white font-medium">Your Liked Songs</span>
-                  <p class="text-sm">To check if tracks are already in your library and to add new ones</p>
-                </div>
-              </li>
-              <li class="flex items-start gap-3">
-                <div class="w-8 h-8 bg-spotify-gray/30 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <svg class="w-4 h-4 text-spotify-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                  </svg>
-                </div>
-                <div>
-                  <span class="text-white font-medium">Your Playlists</span>
-                  <p class="text-sm">To show your playlists and add tracks to them</p>
-                </div>
-              </li>
-              <li class="flex items-start gap-3">
-                <div class="w-8 h-8 bg-spotify-gray/30 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <svg class="w-4 h-4 text-spotify-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <div>
-                  <span class="text-white font-medium">Currently Playing</span>
-                  <p class="text-sm">To show what's playing on your Spotify and suggest similar tracks</p>
-                </div>
-              </li>
-              <li class="flex items-start gap-3">
-                <div class="w-8 h-8 bg-spotify-gray/30 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <svg class="w-4 h-4 text-spotify-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                </div>
-                <div>
-                  <span class="text-white font-medium">Your Profile</span>
-                  <p class="text-sm">Just to show your name and avatar in the header</p>
-                </div>
-              </li>
-            </ul>
-          </section>
+        <!-- Your Rights -->
+        <section>
+          <h3 class="text-white text-xl font-semibold mb-4">Your Rights</h3>
+          <p class="mb-4">You have complete control over your data:</p>
+          <ul class="space-y-2 text-sm">
+            <li class="flex items-start gap-2">
+              <span class="text-spotify-green mt-0.5">•</span>
+              <span
+                ><strong class="text-white">Log out</strong> at any time to clear
+                your session and cookies</span
+              >
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-spotify-green mt-0.5">•</span>
+              <span
+                ><strong class="text-white">Clear search history</strong> using the
+                "Clear" button in the search dropdown</span
+              >
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-spotify-green mt-0.5">•</span>
+              <span
+                ><strong class="text-white">Revoke access</strong> from your Spotify
+                account settings at any time</span
+              >
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-spotify-green mt-0.5">•</span>
+              <span
+                ><strong class="text-white">Clear browser data</strong> to remove
+                all locally stored information</span
+              >
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-spotify-green mt-0.5">•</span>
+              <span
+                ><strong class="text-white">Opt out of analytics</strong> using the
+                toggle in the Anonymous Analytics section above</span
+              >
+            </li>
+          </ul>
+        </section>
 
-          <!-- How Data is Stored -->
-          <section>
-            <h3 class="text-white text-xl font-semibold mb-4">How Data is Stored</h3>
-            <div class="space-y-4">
-              <div class="bg-spotify-gray/10 rounded-lg p-4 border border-spotify-gray/20">
-                <h4 class="text-white font-medium mb-2">Browser Cookies</h4>
-                <p class="text-sm">
-                  We store Spotify access tokens in HTTP-only cookies. These are encrypted, cannot be accessed by JavaScript, and are automatically deleted when you log out or they expire.
-                </p>
-              </div>
-              <div class="bg-spotify-gray/10 rounded-lg p-4 border border-spotify-gray/20">
-                <h4 class="text-white font-medium mb-2">Local Storage</h4>
-                <p class="text-sm">
-                  Your search history is stored locally in your browser. This data never leaves your device and can be cleared at any time using the "Clear" button or by clearing your browser data.
-                </p>
-              </div>
-              <div class="bg-spotify-gray/10 rounded-lg p-4 border border-spotify-gray/20">
-                <h4 class="text-white font-medium mb-2">Server-Side</h4>
-                <p class="text-sm">
-                  We don't maintain any database or persistent storage. No user data, search queries, or listening history is ever stored on our servers.
-                </p>
-              </div>
-            </div>
-          </section>
+        <!-- Open Source -->
+        <section>
+          <h3 class="text-white text-xl font-semibold mb-4">Open Source</h3>
+          <p class="text-sm">
+            Spillover is open source. You can inspect the code to verify exactly
+            what data is accessed and how it's handled. Transparency is
+            important to us.
+          </p>
+        </section>
 
-          <!-- What We DON'T Do -->
-          <section>
-            <h3 class="text-white text-xl font-semibold mb-4">What We Don't Do</h3>
-            <div class="grid gap-3">
-              <div class="flex items-center gap-3 text-sm">
-                <svg class="w-5 h-5 text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-                <span>We don't use invasive tracking or record your sessions</span>
-              </div>
-              <div class="flex items-center gap-3 text-sm">
-                <svg class="w-5 h-5 text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-                <span>We don't sell or share your data with third parties</span>
-              </div>
-              <div class="flex items-center gap-3 text-sm">
-                <svg class="w-5 h-5 text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-                <span>We don't store your Spotify password (we use OAuth)</span>
-              </div>
-              <div class="flex items-center gap-3 text-sm">
-                <svg class="w-5 h-5 text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-                <span>We don't collect your email or personal information</span>
-              </div>
-              <div class="flex items-center gap-3 text-sm">
-                <svg class="w-5 h-5 text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-                <span>We don't log your searches or listening activity</span>
-              </div>
-              <div class="flex items-center gap-3 text-sm">
-                <svg class="w-5 h-5 text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-                <span>We don't use advertising or marketing cookies</span>
-              </div>
-            </div>
-          </section>
+        <!-- Contact -->
+        <section>
+          <h3 class="text-white text-xl font-semibold mb-4">Questions?</h3>
+          <p class="text-sm">
+            If you have any questions about this privacy policy or how your data
+            is handled, feel free to open an issue on our GitHub repository.
+          </p>
+        </section>
+      </div>
 
-          <!-- Third Parties -->
-          <section>
-            <h3 class="text-white text-xl font-semibold mb-4">Third-Party Services</h3>
-            <div class="bg-spotify-gray/10 rounded-lg p-4 border border-spotify-gray/20">
-              <div class="flex items-center gap-3 mb-3">
-                <svg class="w-6 h-6 text-[#1DB954]" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
-                </svg>
-                <span class="text-white font-medium">Spotify</span>
-              </div>
-              <p class="text-sm">
-                We use the official Spotify Web API to search for tracks, manage your library, and access your playlists. All communication is encrypted and goes directly through Spotify's servers. Your Spotify account is protected by their security measures, and you can revoke Spillover's access at any time from your <a href="https://www.spotify.com/account/apps/" target="_blank" rel="noopener noreferrer" class="text-spotify-green hover:underline">Spotify account settings</a>.
-              </p>
-            </div>
-          </section>
-
-          <!-- Analytics -->
-          <section>
-            <h3 class="text-white text-xl font-semibold mb-4">Anonymous Analytics</h3>
-            <div class="bg-spotify-gray/10 rounded-lg p-4 border border-spotify-gray/20 mb-4">
-              <div class="flex items-center gap-3 mb-3">
-                <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-                <span class="text-white font-medium">PostHog (Optional)</span>
-              </div>
-              <p class="text-sm mb-3">
-                We may use PostHog for basic, anonymous analytics to understand how the app is used. This helps us improve features and fix issues. Here's what you should know:
-              </p>
-              <ul class="space-y-2 text-sm">
-                <li class="flex items-start gap-2">
-                  <span class="text-spotify-green mt-0.5">•</span>
-                  <span><strong class="text-white">No IP addresses</strong> - We explicitly disable IP collection</span>
-                </li>
-                <li class="flex items-start gap-2">
-                  <span class="text-spotify-green mt-0.5">•</span>
-                  <span><strong class="text-white">No session recordings</strong> - We don't record your screen or interactions</span>
-                </li>
-                <li class="flex items-start gap-2">
-                  <span class="text-spotify-green mt-0.5">•</span>
-                  <span><strong class="text-white">No auto-capture</strong> - We only track page views, not clicks or form inputs</span>
-                </li>
-                <li class="flex items-start gap-2">
-                  <span class="text-spotify-green mt-0.5">•</span>
-                  <span><strong class="text-white">Anonymous by default</strong> - Only aggregate usage data, no personal profiles</span>
-                </li>
-              </ul>
-            </div>
-            <p class="text-sm mb-4">
-              Analytics are optional and only enabled if the site operator configures it. Self-hosted instances can run without any analytics.
-            </p>
-            <div class="mt-4">
-              <p class="text-white text-sm font-medium mb-2">Your Preference</p>
-              <AnalyticsOptOut client:load />
-            </div>
-          </section>
-
-          <!-- Your Rights -->
-          <section>
-            <h3 class="text-white text-xl font-semibold mb-4">Your Rights</h3>
-            <p class="mb-4">You have complete control over your data:</p>
-            <ul class="space-y-2 text-sm">
-              <li class="flex items-start gap-2">
-                <span class="text-spotify-green mt-0.5">•</span>
-                <span><strong class="text-white">Log out</strong> at any time to clear your session and cookies</span>
-              </li>
-              <li class="flex items-start gap-2">
-                <span class="text-spotify-green mt-0.5">•</span>
-                <span><strong class="text-white">Clear search history</strong> using the "Clear" button in the search dropdown</span>
-              </li>
-              <li class="flex items-start gap-2">
-                <span class="text-spotify-green mt-0.5">•</span>
-                <span><strong class="text-white">Revoke access</strong> from your Spotify account settings at any time</span>
-              </li>
-              <li class="flex items-start gap-2">
-                <span class="text-spotify-green mt-0.5">•</span>
-                <span><strong class="text-white">Clear browser data</strong> to remove all locally stored information</span>
-              </li>
-              <li class="flex items-start gap-2">
-                <span class="text-spotify-green mt-0.5">•</span>
-                <span><strong class="text-white">Opt out of analytics</strong> using the toggle in the Anonymous Analytics section above</span>
-              </li>
-            </ul>
-          </section>
-
-          <!-- Open Source -->
-          <section>
-            <h3 class="text-white text-xl font-semibold mb-4">Open Source</h3>
-            <p class="text-sm">
-              Spillover is open source. You can inspect the code to verify exactly what data is accessed and how it's handled. Transparency is important to us.
-            </p>
-          </section>
-
-          <!-- Contact -->
-          <section>
-            <h3 class="text-white text-xl font-semibold mb-4">Questions?</h3>
-            <p class="text-sm">
-              If you have any questions about this privacy policy or how your data is handled, feel free to open an issue on our GitHub repository.
-            </p>
-          </section>
-        </div>
-
-        <!-- Back to App -->
-        <div class="mt-12 pt-8 border-t border-spotify-gray/20 text-center">
-          <a
-            href="/"
-            class="inline-flex items-center gap-2 px-6 py-3 bg-spotify-green text-black font-bold rounded-full hover:bg-spotify-green/90 hover:scale-105 transition-all"
+      <!-- Back to App -->
+      <div class="mt-12 pt-8 border-t border-spotify-gray/20 text-center">
+        <a
+          href="/"
+          class="inline-flex items-center gap-2 px-6 py-3 bg-spotify-green text-black font-bold rounded-full hover:bg-spotify-green/90 hover:scale-105 transition-all"
+        >
+          Back to Spillover
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
           >
-            Back to Spillover
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-            </svg>
-          </a>
-        </div>
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+          </svg>
+        </a>
       </div>
-    </main>
-
-    <!-- Footer -->
-    <footer class="border-t border-spotify-gray/20">
-      <div class="max-w-4xl mx-auto px-4 py-4 text-center text-sm text-spotify-lightgray">
-        <p>Not affiliated with Spotify. Built for personal use.</p>
-      </div>
-    </footer>
+    </div>
   </div>
 </Layout>

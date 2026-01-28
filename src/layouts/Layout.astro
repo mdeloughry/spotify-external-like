@@ -1,12 +1,26 @@
 ---
-import Analytics from '../components/Analytics.astro';
-import CookieBanner from '../components/CookieBanner';
+import Analytics from "../components/Analytics.astro";
+import CookieBanner from "../components/CookieBanner";
+import SiteHeader from "../components/SiteHeader.astro";
+import SiteFooter from "../components/SiteFooter.astro";
 
 interface Props {
   title: string;
+  showAuthHeader?: boolean;
+  isAuthenticated?: boolean;
+  showBackLink?: boolean;
+  backHref?: string;
+  backLabel?: string;
 }
 
-const { title } = Astro.props;
+const {
+  title,
+  showAuthHeader = false,
+  isAuthenticated = false,
+  showBackLink = false,
+  backHref = "/",
+  backLabel = "Back to app",
+} = Astro.props;
 const url = Astro.url.href;
 ---
 
@@ -15,35 +29,79 @@ const url = Astro.url.href;
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Spillover - Quickly save tracks to your Spotify library while listening on other platforms" />
+    <meta
+      name="description"
+      content="Spillover - Quickly save tracks to your Spotify library while listening on other platforms"
+    />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta property="og:title" content={title} />
-    <meta property="og:description" content="Spillover - Quickly save tracks to your Spotify library while listening on other platforms" />
+    <meta
+      property="og:description"
+      content="Spillover - Quickly save tracks to your Spotify library while listening on other platforms"
+    />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="/favicon.svg" />
     <meta property="og:url" content={url} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
-    <meta name="twitter:description" content="Spillover - Quickly save tracks to your Spotify library while listening on other platforms" />
+    <meta
+      name="twitter:description"
+      content="Spillover - Quickly save tracks to your Spotify library while listening on other platforms"
+    />
     <meta name="twitter:image" content="/favicon.svg" />
     <title>{title}</title>
     <Analytics />
   </head>
-  <body class="bg-spotify-black min-h-screen text-white">
-    <slot />
+  <body class="min-h-screen text-white antialiased">
+    <div class="relative min-h-screen overflow-hidden">
+      <!-- Subtle demoscene-style field -->
+      <div
+        class="pointer-events-none absolute -inset-[120px] opacity-[0.32] mix-blend-screen bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.32),transparent_60%),radial-gradient(circle_at_bottom,_rgba(244,63,94,0.24),transparent_60%),radial-gradient(circle_at_top_left,_rgba(129,140,248,0.3),transparent_55%)] animate-orbit-field"
+      >
+      </div>
+
+      <div class="relative z-10 min-h-screen flex flex-col">
+        <SiteHeader
+          showAuthHeader={showAuthHeader}
+          isAuthenticated={isAuthenticated}
+          showBackLink={showBackLink}
+          backHref={backHref}
+          backLabel={backLabel}
+        />
+        <main class="flex-1">
+          <slot />
+        </main>
+        <SiteFooter />
+      </div>
+    </div>
     <CookieBanner client:load />
   </body>
 </html>
 
 <style is:global>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
   * {
     box-sizing: border-box;
   }
 
   body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family:
+      "Inter",
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      Roboto,
+      sans-serif;
+    background:
+      radial-gradient(circle at top, rgba(34, 197, 94, 0.18), transparent 60%),
+      radial-gradient(
+        circle at bottom left,
+        rgba(56, 189, 248, 0.12),
+        transparent 55%
+      ),
+      #020617;
+    color: #f9fafb;
   }
 
   @keyframes slide-up {
@@ -74,5 +132,22 @@ const url = Astro.url.href;
 
   .animate-scale-in {
     animation: scale-in 0.2s ease-out;
+  }
+
+  @keyframes orbit-field {
+    0% {
+      transform: translate3d(0, 0, 0) rotate(0deg);
+    }
+    50% {
+      transform: translate3d(0, -12px, 0) rotate(1.5deg);
+    }
+    100% {
+      transform: translate3d(0, 0, 0) rotate(3deg);
+    }
+  }
+
+  .animate-orbit-field {
+    animation: orbit-field 42s linear infinite;
+    will-change: transform;
   }
 </style>

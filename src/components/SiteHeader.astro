@@ -1,0 +1,70 @@
+---
+import Logo from "./Logo.astro";
+import AuthButton from "./AuthButton";
+
+interface Props {
+  showAuthHeader?: boolean;
+  isAuthenticated?: boolean;
+  showBackLink?: boolean;
+  backHref?: string;
+  backLabel?: string;
+}
+
+const {
+  showAuthHeader = false,
+  isAuthenticated = false,
+  showBackLink = false,
+  backHref = "/",
+  backLabel = "Back to app",
+} = Astro.props;
+---
+
+<header class="border-b border-white/5/60 backdrop-blur-sm">
+  <div
+    class="max-w-5xl mx-auto px-4 py-4 lg:py-5 flex items-center justify-between gap-3 lg:gap-4"
+  >
+    <a
+      href="/"
+      class="flex items-center gap-2.5 lg:gap-3 hover:opacity-90 transition-opacity"
+    >
+      <div
+        class="inline-flex h-9 w-9 lg:h-10 lg:w-10 items-center justify-center rounded-2xl"
+      >
+        <Logo />
+      </div>
+      <div>
+        <div class="flex items-center gap-1.5 lg:gap-2">
+          <h1 class="text-base lg:text-lg font-semibold tracking-tight">
+            Spillover
+          </h1>
+          <span
+            class="rounded-full border border-emerald-400/35 bg-emerald-400/8 px-2.5 py-0.5 text-[0.6rem] lg:text-[0.65rem] uppercase tracking-[0.22em] text-emerald-200/95"
+          >
+            Browser companion
+          </span>
+        </div>
+        <p class="mt-0.5 text-[0.7rem] lg:text-xs text-spotify-lightgray/90">
+          For people who listen everywhere
+        </p>
+      </div>
+    </a>
+
+    {
+      showAuthHeader ? (
+        <div class="flex items-center gap-2.5 lg:gap-3">
+          <span class="hidden text-[0.7rem] lg:text-xs text-spotify-lightgray sm:inline">
+            {isAuthenticated ? "Signed in to Spotify" : "Sign in with Spotify"}
+          </span>
+          <AuthButton client:load isAuthenticated={isAuthenticated} />
+        </div>
+      ) : showBackLink ? (
+        <a
+          href={backHref}
+          class="text-sm text-spotify-lightgray hover:text-white transition-colors"
+        >
+          {backLabel}
+        </a>
+      ) : null
+    }
+  </div>
+</header>

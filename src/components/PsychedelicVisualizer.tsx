@@ -1,4 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import * as THREE from 'three';
 
 interface PsychedelicVisualizerProps {
@@ -343,7 +344,12 @@ export default function PsychedelicVisualizer({ audioElement, onClose }: Psyched
     };
   }, [audioElement, onClose, cleanup]);
 
-  return (
+  // Render into document.body so we escape any layout/overflow clipping and truly cover the viewport
+  if (typeof document === 'undefined') {
+    return null;
+  }
+
+  return createPortal(
     <div
       ref={containerRef}
       className="fixed inset-0 z-[100] bg-black cursor-pointer"
@@ -395,6 +401,7 @@ export default function PsychedelicVisualizer({ audioElement, onClose }: Psyched
           100% { background-position: 300% 50%; }
         }
       `}</style>
-    </div>
+    </div>,
+    document.body
   );
 }

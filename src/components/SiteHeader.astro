@@ -19,26 +19,40 @@ const {
 } = Astro.props;
 ---
 
-<header class="border-b border-white/10 backdrop-blur-sm">
+<header class="relative border-b border-white/10 backdrop-blur-xl bg-gradient-to-r from-black/80 via-emerald-950/20 to-black/80">
+  <!-- Subtle glow effect -->
+  <div class="absolute inset-0 bg-gradient-to-b from-emerald-500/5 to-transparent pointer-events-none"></div>
+
   <div
-    class="max-w-5xl mx-auto px-4 py-4 lg:py-5 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-3 lg:gap-4"
+    class="relative max-w-5xl mx-auto px-4 py-4 lg:py-5 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
   >
     <a
       href="/"
-      class="flex items-center gap-2.5 lg:gap-3 hover:opacity-90 transition-opacity"
+      class="group flex items-center gap-3 lg:gap-4 hover:opacity-95 transition-all"
     >
+      <!-- Logo container with glow -->
       <div
-        class="inline-flex h-9 w-9 lg:h-10 lg:w-10 items-center justify-center rounded-2xl"
+        class="relative inline-flex h-11 w-11 lg:h-12 lg:w-12 items-center justify-center"
       >
-        <Logo />
+        <!-- Glow ring -->
+        <div class="absolute inset-0 rounded-2xl bg-gradient-to-br from-emerald-400/20 to-emerald-600/10 blur-sm group-hover:from-emerald-400/30 group-hover:to-emerald-600/20 transition-all"></div>
+        <!-- Logo background -->
+        <div class="relative flex items-center justify-center h-full w-full rounded-2xl bg-gradient-to-br from-emerald-950/80 to-black/60 border border-emerald-500/20 shadow-lg shadow-emerald-900/20">
+          <Logo />
+        </div>
       </div>
+
       <div>
-        <div class="flex items-center gap-1.5 lg:gap-2">
-          <h1 class="text-base lg:text-lg font-semibold tracking-tight">
+        <div class="flex items-center gap-2">
+          <h1 class="text-lg lg:text-xl font-bold tracking-tight bg-gradient-to-r from-white via-white to-emerald-200 bg-clip-text text-transparent">
             Spillover
           </h1>
+          <!-- Version badge -->
+          <span class="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded-full text-[0.6rem] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            beta
+          </span>
         </div>
-        <p class="mt-0.5 text-[0.7rem] lg:text-xs text-spotify-lightgray/90">
+        <p class="mt-0.5 text-[0.7rem] lg:text-xs text-spotify-lightgray/80 font-medium tracking-wide">
           For people who listen everywhere
         </p>
       </div>
@@ -46,17 +60,27 @@ const {
 
     {
       showAuthHeader ? (
-        <div class="w-full sm:w-auto flex items-center justify-end gap-2.5 lg:gap-3">
-          <span class="hidden text-[0.7rem] lg:text-xs text-spotify-lightgray sm:inline">
-            {isAuthenticated ? "Signed in to Spotify" : "Sign in with Spotify"}
+        <div class="w-full sm:w-auto flex items-center justify-end gap-3 lg:gap-4">
+          <span class="hidden text-[0.7rem] lg:text-xs text-spotify-lightgray/70 sm:inline font-medium">
+            {isAuthenticated ? (
+              <span class="flex items-center gap-1.5">
+                <span class="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                Connected to Spotify
+              </span>
+            ) : (
+              "Sign in with Spotify"
+            )}
           </span>
           <AuthButton client:load isAuthenticated={isAuthenticated} />
         </div>
       ) : showBackLink ? (
         <a
           href={backHref}
-          class="text-sm text-spotify-lightgray hover:text-white transition-colors"
+          class="flex items-center gap-2 text-sm text-spotify-lightgray hover:text-white transition-colors group"
         >
+          <svg class="w-4 h-4 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
           {backLabel}
         </a>
       ) : null

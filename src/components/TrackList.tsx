@@ -12,12 +12,13 @@ interface TrackListProps {
 export default function TrackList({ tracks, onLikeToggle, onAddToPlaylist, playingTrackId, onPlayToggle }: TrackListProps) {
   if (tracks.length === 0) {
     return (
-      <div className="text-center py-12 text-spotify-lightgray">
+      <div className="text-center py-12 text-spotify-lightgray" role="status">
         <svg
           className="w-16 h-16 mx-auto mb-4 opacity-50"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
+          aria-hidden="true"
         >
           <path
             strokeLinecap="round"
@@ -32,17 +33,18 @@ export default function TrackList({ tracks, onLikeToggle, onAddToPlaylist, playi
   }
 
   return (
-    <div className="space-y-1">
+    <ul role="list" aria-label="Search results" className="space-y-1">
       {tracks.map((track) => (
-        <TrackCard
-          key={track.id}
-          track={track}
-          onLikeToggle={onLikeToggle}
-          onAddToPlaylist={onAddToPlaylist}
-          isPlaying={playingTrackId === track.id}
-          onPlayToggle={onPlayToggle}
-        />
+        <li key={track.id}>
+          <TrackCard
+            track={track}
+            onLikeToggle={onLikeToggle}
+            onAddToPlaylist={onAddToPlaylist}
+            isPlaying={playingTrackId === track.id}
+            onPlayToggle={onPlayToggle}
+          />
+        </li>
       ))}
-    </div>
+    </ul>
   );
 }

@@ -144,8 +144,8 @@ export default function SpotifyNowPlaying({ onTrackSelect, onTrackChange }: Spot
             />
           )}
           {nowPlaying.is_playing && (
-            <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-spotify-green rounded-full flex items-center justify-center">
-              <svg className="w-3 h-3 text-black" fill="currentColor" viewBox="0 0 24 24">
+            <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-spotify-green rounded-full flex items-center justify-center" aria-hidden="true">
+              <svg className="w-3 h-3 text-black" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M8 5v14l11-7z" />
               </svg>
             </div>
@@ -168,8 +168,10 @@ export default function SpotifyNowPlaying({ onTrackSelect, onTrackChange }: Spot
             target="_blank"
             rel="noopener noreferrer"
             className="font-semibold text-white truncate block hover:underline"
+            aria-label={`${track.name} (opens in Spotify)`}
           >
             {track.name}
+            <span className="sr-only"> (opens in new tab)</span>
           </a>
           <p className="text-sm text-spotify-lightgray truncate">
             {track.artists.map((a) => a.name).join(', ')}
@@ -177,16 +179,24 @@ export default function SpotifyNowPlaying({ onTrackSelect, onTrackChange }: Spot
 
           {/* Progress Bar */}
           <div className="flex items-center gap-2 mt-2">
-            <span className="text-xs text-spotify-lightgray w-10">
+            <span className="text-xs text-spotify-lightgray w-10" aria-hidden="true">
               {formatDuration(progress)}
             </span>
-            <div className="flex-grow h-1 bg-spotify-gray/50 rounded-full overflow-hidden">
+            <div
+              role="progressbar"
+              aria-label="Track progress"
+              aria-valuenow={progress}
+              aria-valuemin={0}
+              aria-valuemax={duration}
+              aria-valuetext={`${formatDuration(progress)} of ${formatDuration(duration)}`}
+              className="flex-grow h-1 bg-spotify-gray/50 rounded-full overflow-hidden"
+            >
               <div
                 className="h-full bg-spotify-green transition-all duration-1000 ease-linear"
                 style={{ width: `${progressPercent}%` }}
               />
             </div>
-            <span className="text-xs text-spotify-lightgray w-10 text-right">
+            <span className="text-xs text-spotify-lightgray w-10 text-right" aria-hidden="true">
               {formatDuration(duration)}
             </span>
           </div>
@@ -202,12 +212,15 @@ export default function SpotifyNowPlaying({ onTrackSelect, onTrackChange }: Spot
                 : 'text-spotify-lightgray hover:text-white'
             }`}
             title={isLiked ? 'Remove from Liked Songs' : 'Add to Liked Songs'}
+            aria-label={isLiked ? `Remove ${track.name} from Liked Songs` : `Save ${track.name} to Liked Songs`}
+            aria-pressed={isLiked}
           >
             <svg
               className="w-6 h-6"
               fill={isLiked ? 'currentColor' : 'none'}
               stroke="currentColor"
               viewBox="0 0 24 24"
+              aria-hidden="true"
             >
               <path
                 strokeLinecap="round"
@@ -222,8 +235,9 @@ export default function SpotifyNowPlaying({ onTrackSelect, onTrackChange }: Spot
               onClick={() => onTrackSelect(track)}
               className="p-2 rounded-full text-spotify-lightgray hover:text-white transition-colors"
               title="Add to Playlist"
+              aria-label={`Add ${track.name} to playlist`}
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
             </button>
@@ -232,9 +246,9 @@ export default function SpotifyNowPlaying({ onTrackSelect, onTrackChange }: Spot
             onClick={handleShare}
             className="p-2 rounded-full text-spotify-lightgray hover:text-white transition-colors"
             title="Copy track link"
-            aria-label={track ? `Copy link for ${track.name} to clipboard` : 'Copy track link'}
+            aria-label={`Copy link for ${track.name} to clipboard`}
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"

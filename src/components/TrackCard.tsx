@@ -64,7 +64,7 @@ export default function TrackCard({ track, onLikeToggle, onAddToPlaylist, isPlay
           />
         ) : (
           <div className="w-14 h-14 rounded-xl shadow-md bg-gradient-to-br from-emerald-500 via-emerald-400 to-sky-400 flex items-center justify-center ring-1 ring-white/10">
-            <svg className="w-6 h-6 text-spotify-lightgray" fill="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6 text-spotify-lightgray" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
             </svg>
           </div>
@@ -79,11 +79,11 @@ export default function TrackCard({ track, onLikeToggle, onAddToPlaylist, isPlay
           aria-label={!hasPreview ? `No preview available for ${track.name}` : isPlaying ? `Pause preview of ${track.name}` : `Play preview of ${track.name}`}
         >
           {isPlaying ? (
-            <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+            <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
             </svg>
           ) : (
-            <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+            <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M8 5v14l11-7z" />
             </svg>
           )}
@@ -97,8 +97,10 @@ export default function TrackCard({ track, onLikeToggle, onAddToPlaylist, isPlay
           target="_blank"
           rel="noopener noreferrer"
           className="block truncate text-sm font-medium text-white hover:text-emerald-200"
+          aria-label={`${track.name} (opens in Spotify)`}
         >
           {track.name}
+          <span className="sr-only"> (opens in new tab)</span>
         </a>
         <p className="text-xs text-spotify-lightgray truncate">{artists}</p>
         <p className="mt-1 text-xs text-spotify-lightgray/70 truncate">
@@ -117,13 +119,13 @@ export default function TrackCard({ track, onLikeToggle, onAddToPlaylist, isPlay
         <div className="flex flex-wrap justify-end gap-1">
           {hasPreview && (
             <span className="inline-flex items-center gap-1 rounded-full bg-emerald-400/10 px-2 py-0.5 text-[0.6rem] sm:text-xs uppercase tracking-[0.16em] text-emerald-200">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-300" />
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-300" aria-hidden="true" />
               Preview
             </span>
           )}
           {isLiked && (
             <span className="inline-flex items-center gap-1 rounded-full border border-white/15 px-2 py-0.5 text-[0.6rem] sm:text-xs uppercase tracking-[0.16em] text-spotify-lightgray">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-300" />
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-300" aria-hidden="true" />
               Liked
             </span>
           )}
@@ -144,13 +146,16 @@ export default function TrackCard({ track, onLikeToggle, onAddToPlaylist, isPlay
             aria-pressed={isLiked}
           >
             {isLikeLoading ? (
-              <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" aria-hidden="true">
+                <span className="sr-only">Loading...</span>
+              </div>
             ) : (
               <svg
                 className="w-5 h-5"
                 fill={isLiked ? 'currentColor' : 'none'}
                 stroke="currentColor"
                 viewBox="0 0 24 24"
+                aria-hidden="true"
               >
                 <path
                   strokeLinecap="round"
@@ -168,7 +173,7 @@ export default function TrackCard({ track, onLikeToggle, onAddToPlaylist, isPlay
             className="p-2.5 sm:p-2 min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 rounded-full text-spotify-lightgray hover:text-white transition-colors flex items-center justify-center"
             aria-label={`Add ${track.name} to playlist`}
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -185,7 +190,7 @@ export default function TrackCard({ track, onLikeToggle, onAddToPlaylist, isPlay
             aria-label={`Copy link for ${track.name} to clipboard`}
             title="Copy track link"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"

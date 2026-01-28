@@ -134,80 +134,85 @@ export default function PlaylistSelector({ track, onClose, onAdd }: PlaylistSele
         {/* Playlist List */}
         <div className="overflow-y-auto flex-grow">
           {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="w-8 h-8 border-2 border-spotify-green border-t-transparent rounded-full animate-spin" />
+            <div className="flex items-center justify-center py-12" role="status" aria-label="Loading playlists">
+              <div className="w-8 h-8 border-2 border-spotify-green border-t-transparent rounded-full animate-spin" aria-hidden="true" />
+              <span className="sr-only">Loading playlists...</span>
             </div>
           ) : error ? (
-            <div className="text-center py-12 text-red-400">
+            <div className="text-center py-12 text-red-400" role="alert">
               <p>{error}</p>
             </div>
           ) : playlists.length === 0 ? (
-            <div className="text-center py-12 text-spotify-lightgray">
+            <div className="text-center py-12 text-spotify-lightgray" role="status">
               <p>No playlists found</p>
             </div>
           ) : (
-            <div className="p-2">
+            <ul className="p-2" role="list" aria-label="Your playlists">
               {playlists.map((playlist) => {
                 const isAdded = addedTo.has(playlist.id);
                 const isAdding = addingTo === playlist.id;
                 const playlistImage = playlist.images[0]?.url;
 
                 return (
-                  <button
-                    key={playlist.id}
-                    onClick={() => !isAdded && handleAdd(playlist.id)}
-                    disabled={isAdding || isAdded}
-                    aria-label={isAdded ? `Already added to ${playlist.name}` : `Add to ${playlist.name}`}
-                    aria-busy={isAdding}
-                    className={`w-full flex items-center gap-3 p-3 min-h-[56px] rounded-md transition-colors ${
-                      isAdded
-                        ? 'bg-spotify-green/10 cursor-default'
-                        : 'hover:bg-spotify-gray/20'
-                    } disabled:opacity-70`}
-                  >
-                    {/* Playlist Image */}
-                    {playlistImage ? (
-                      <img
-                        src={playlistImage}
-                        alt={playlist.name}
-                        className="w-10 h-10 rounded"
-                      />
-                    ) : (
-                      <div className="w-10 h-10 rounded bg-spotify-gray flex items-center justify-center">
+                  <li key={playlist.id}>
+                    <button
+                      onClick={() => !isAdded && handleAdd(playlist.id)}
+                      disabled={isAdding || isAdded}
+                      aria-label={isAdded ? `Already added to ${playlist.name}` : `Add to ${playlist.name}`}
+                      aria-busy={isAdding}
+                      className={`w-full flex items-center gap-3 p-3 min-h-[56px] rounded-md transition-colors ${
+                        isAdded
+                          ? 'bg-spotify-green/10 cursor-default'
+                          : 'hover:bg-spotify-gray/20'
+                      } disabled:opacity-70`}
+                    >
+                      {/* Playlist Image */}
+                      {playlistImage ? (
+                        <img
+                          src={playlistImage}
+                          alt=""
+                          className="w-10 h-10 rounded"
+                          aria-hidden="true"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded bg-spotify-gray flex items-center justify-center" aria-hidden="true">
+                          <svg
+                            className="w-5 h-5 text-spotify-lightgray"
+                            fill="currentColor"
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
+                          >
+                            <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
+                          </svg>
+                        </div>
+                      )}
+
+                      {/* Playlist Info */}
+                      <div className="flex-grow text-left min-w-0">
+                        <p className="font-medium text-white truncate">{playlist.name}</p>
+                        <p className="text-sm text-spotify-lightgray">
+                          {playlist.tracks.total} tracks
+                        </p>
+                      </div>
+
+                      {/* Status */}
+                      {isAdding ? (
+                        <div className="w-5 h-5 border-2 border-spotify-green border-t-transparent rounded-full animate-spin" aria-hidden="true" />
+                      ) : isAdded ? (
                         <svg
-                          className="w-5 h-5 text-spotify-lightgray"
+                          className="w-5 h-5 text-spotify-green"
                           fill="currentColor"
                           viewBox="0 0 24 24"
+                          aria-hidden="true"
                         >
-                          <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
+                          <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
                         </svg>
-                      </div>
-                    )}
-
-                    {/* Playlist Info */}
-                    <div className="flex-grow text-left min-w-0">
-                      <p className="font-medium text-white truncate">{playlist.name}</p>
-                      <p className="text-sm text-spotify-lightgray">
-                        {playlist.tracks.total} tracks
-                      </p>
-                    </div>
-
-                    {/* Status */}
-                    {isAdding ? (
-                      <div className="w-5 h-5 border-2 border-spotify-green border-t-transparent rounded-full animate-spin" />
-                    ) : isAdded ? (
-                      <svg
-                        className="w-5 h-5 text-spotify-green"
-                        fill="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
-                      </svg>
-                    ) : null}
-                  </button>
+                      ) : null}
+                    </button>
+                  </li>
                 );
               })}
-            </div>
+            </ul>
           )}
         </div>
       </div>

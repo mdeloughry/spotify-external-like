@@ -1,0 +1,21 @@
+[package]
+name = "spotify-external-like"
+version = "0.0.1"
+description = "Spotify external like – Astro web app and browser extension"
+
+# This is a starter Nixpak configuration intended for customisation.
+# It assumes a Node.js / npm build that produces static assets into `dist/`.
+
+[build]
+command = "npm install && npm run build"
+artifacts = ["dist"]
+
+[env]
+NODE_ENV = "production"
+
+[runtime]
+# The command you want to run inside the packaged environment.
+# For a purely static deployment you may not need a runtime at all,
+# but for local serving you might run Astro's preview server:
+command = "npm run preview"
+

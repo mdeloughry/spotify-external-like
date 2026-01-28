@@ -1,0 +1,177 @@
+import { useState, useEffect, useRef } from 'react';
+import type { SpotifyTrack } from '../lib/spotify';
+
+interface NowPlayingBarProps {
+  track: SpotifyTrack | null;
+  isPlaying: boolean;
+  onPlayPause: () => void;
+  onStop: () => void;
+  audioRef: React.RefObject<HTMLAudioElement | null>;
+}
+
+export default function NowPlayingBar({ track, isPlaying, onPlayPause, onStop, audioRef }: NowPlayingBarProps) {
+  const [progress, setProgress] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [volume, setVolume] = useState(0.5);
+  const progressInterval = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (isPlaying && audioRef.current) {
+      setDuration(audioRef.current.duration || 30);
+
+      progressInterval.current = setInterval(() => {
+        if (audioRef.current) {
+          setProgress(audioRef.current.currentTime);
+        }
+      }, 100);
+    } else {
+      if (progressInterval.current) {
+        clearInterval(progressInterval.current);
+      }
+    }
+
+    return () => {
+      if (progressInterval.current) {
+        clearInterval(progressInterval.current);
+      }
+    };
+  }, [isPlaying, audioRef]);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
+    }
+  }, [volume, audioRef]);
+
+  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newTime = parseFloat(e.target.value);
+    setProgress(newTime);
+    if (audioRef.current) {
+      audioRef.current.currentTime = newTime;
+    }
+  };
+
+  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newVolume = parseFloat(e.target.value);
+    setVolume(newVolume);
+  };
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  if (!track) return null;
+
+  const albumImage = track.album.images[2]?.url || track.album.images[0]?.url;
+  const artists = track.artists.map((a) => a.name).join(', ');
+
+  return (
+    <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-black to-spotify-black/95 border-t border-spotify-gray/30 backdrop-blur-lg z-50">
+      <div className="max-w-4xl mx-auto px-4 py-3">
+        <div className="flex items-center gap-4">
+          {/* Track Info */}
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            {albumImage && (
+              <img
+                src={albumImage}
+                alt={track.album.name}
+                className="w-12 h-12 rounded shadow-lg"
+              />
+            )}
+            <div className="min-w-0">
+              <p className="font-medium text-white truncate text-sm">{track.name}</p>
+              <p className="text-xs text-spotify-lightgray truncate">{artists}</p>
+            </div>
+          </div>
+
+          {/* Controls */}
+          <div className="flex flex-col items-center gap-1 flex-1">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={onPlayPause}
+                className="w-8 h-8 flex items-center justify-center bg-white rounded-full hover:scale-105 transition-transform"
+              >
+                {isPlaying ? (
+                  <svg className="w-4 h-4 text-black" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
+                  </svg>
+                ) : (
+                  <svg className="w-4 h-4 text-black ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                )}
+              </button>
+              <button
+                onClick={onStop}
+                className="p-1 text-spotify-lightgray hover:text-white transition-colors"
+                title="Stop"
+              >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M6 6h12v12H6z" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Progress Bar */}
+            <div className="flex items-center gap-2 w-full max-w-md">
+              <span className="text-xs text-spotify-lightgray w-10 text-right">
+                {formatTime(progress)}
+              </span>
+              <input
+                type="range"
+                min="0"
+                max={duration || 30}
+                value={progress}
+                onChange={handleSeek}
+                className="flex-1 h-1 bg-spotify-gray rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:hover:scale-125 [&::-webkit-slider-thumb]:transition-transform"
+                style={{
+                  background: `linear-gradient(to right, #1DB954 ${(progress / (duration || 30)) * 100}%, #535353 ${(progress / (duration || 30)) * 100}%)`
+                }}
+              />
+              <span className="text-xs text-spotify-lightgray w-10">
+                {formatTime(duration || 30)}
+              </span>
+            </div>
+          </div>
+
+          {/* Volume */}
+          <div className="flex items-center gap-2 flex-1 justify-end">
+            <button
+              onClick={() => setVolume(volume === 0 ? 0.5 : 0)}
+              className="p-1 text-spotify-lightgray hover:text-white transition-colors"
+            >
+              {volume === 0 ? (
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" />
+                </svg>
+              ) : volume < 0.5 ? (
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M18.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM5 9v6h4l5 5V4L9 9H5z" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+                </svg>
+              )}
+            </button>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              value={volume}
+              onChange={handleVolumeChange}
+              className="w-24 h-1 bg-spotify-gray rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-full"
+              style={{
+                background: `linear-gradient(to right, #fff ${volume * 100}%, #535353 ${volume * 100}%)`
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+    </div>
+  );
+}

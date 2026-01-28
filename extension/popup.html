@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      width: 320px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #191414;
+      color: #fff;
+      padding: 16px;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .logo {
+      width: 32px;
+      height: 32px;
+    }
+
+    .title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .search-form {
+      margin-bottom: 16px;
+    }
+
+    .input-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 10px 12px;
+      border: 1px solid #535353;
+      border-radius: 20px;
+      background: #282828;
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+    }
+
+    input[type="text"]:focus {
+      border-color: #22c55e;
+    }
+
+    input[type="text"]::placeholder {
+      color: #b3b3b3;
+    }
+
+    button {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 20px;
+      background: #22c55e;
+      color: #000;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    button:hover {
+      background: #16a34a;
+      transform: scale(1.02);
+    }
+
+    .settings {
+      border-top: 1px solid #282828;
+      padding-top: 16px;
+      margin-top: 16px;
+    }
+
+    .settings-title {
+      font-size: 12px;
+      color: #b3b3b3;
+      margin-bottom: 8px;
+    }
+
+    .settings input {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #535353;
+      border-radius: 8px;
+      background: #282828;
+      color: #fff;
+      font-size: 13px;
+      outline: none;
+    }
+
+    .settings input:focus {
+      border-color: #22c55e;
+    }
+
+    .hint {
+      font-size: 11px;
+      color: #b3b3b3;
+      margin-top: 12px;
+      line-height: 1.4;
+    }
+
+    .hint strong {
+      color: #fff;
+    }
+
+    .saved {
+      color: #22c55e;
+      font-size: 12px;
+      margin-top: 8px;
+      display: none;
+    }
+
+    .saved.show {
+      display: block;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      margin-top: 8px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #535353;
+    }
+
+    .status-dot.connected {
+      background: #22c55e;
+    }
+
+    .status-dot.error {
+      background: #ef4444;
+    }
+
+    .status-dot.checking {
+      background: #eab308;
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <svg class="logo" viewBox="0 0 32 32" fill="none">
+      <circle cx="16" cy="16" r="15" stroke="#22c55e" stroke-width="2"/>
+      <path d="M10 20C10 20 12 12 16 12C20 12 22 20 22 20" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="10" cy="20" r="3" fill="#22c55e"/>
+      <circle cx="22" cy="20" r="3" fill="#22c55e"/>
+      <path d="M16 8V12" stroke="#22c55e" stroke-width="2" stroke-linecap="round"/>
+      <path d="M13 6L16 8L19 6" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span class="title">Spillover</span>
+  </div>
+
+  <div class="search-form">
+    <div class="input-group">
+      <input type="text" id="search" placeholder="Search for a track...">
+      <button id="searchBtn">Go</button>
+    </div>
+  </div>
+
+  <div class="settings">
+    <div class="settings-title">App URL</div>
+    <input type="text" id="appUrl" placeholder="http://127.0.0.1:4321">
+    <div class="saved" id="saved">Saved!</div>
+    <div class="status" id="status">
+      <span class="status-dot" id="statusDot"></span>
+      <span id="statusText">Checking connection...</span>
+    </div>
+  </div>
+
+  <div class="hint">
+    <strong>Tip:</strong> Right-click any selected text or link on a webpage to quickly search or import it.
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

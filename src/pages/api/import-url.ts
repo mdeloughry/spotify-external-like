@@ -36,6 +36,41 @@ async function getYouTubeTitle(videoId: string): Promise<string | null> {
   }
 }
 
+// Generic helper to fetch and clean page titles for non-YouTube platforms
+async function getPageTitle(targetUrl: string): Promise<string | null> {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout
+
+    const response = await fetch(targetUrl, { signal: controller.signal });
+    clearTimeout(timeoutId);
+
+    if (!response.ok) return null;
+    const html = await response.text();
+
+    const match = html.match(/<title[^>]*>([^<]*)<\/title>/i);
+    if (!match?.[1]) return null;
+
+    let title = match[1].trim();
+
+    // Normalise common suffix patterns from music services
+    title = title
+      // Apple Music: "Song Name by Artist on Apple Music"
+      .replace(/\s+on\s+Apple Music\s*$/i, '')
+      // Deezer: "Artist - Track - Deezer"
+      .replace(/\s*-\s*Deezer\s*$/i, '')
+      // Bandcamp: "Track | Artist" or "Album | Artist"
+      .replace(/\s*\|\s*Bandcamp\s*$/i, '')
+      // Remove site names in brackets
+      .replace(/\s*\(.*?(Deezer|Apple Music|Bandcamp).*?\)\s*$/i, '')
+      .trim();
+
+    return title || null;
+  } catch {
+    return null;
+  }
+}
+
 export const POST: APIRoute = async ({ request }) => {
   const startTime = Date.now();
   const path = '/api/import-url';
@@ -71,7 +106,10 @@ export const POST: APIRoute = async ({ request }) => {
     const parsed = parseTrackUrl(url);
     if (!parsed) {
       log({ level: 'info', method: 'POST', path, status: 400, error: 'Unsupported URL format' });
-      return errorResponse('Unsupported URL format. Supported: YouTube, Spotify, SoundCloud', 400);
+      return errorResponse(
+        'Unsupported URL format. Supported: YouTube, Spotify, SoundCloud, and most music sites.',
+        400
+      );
     }
 
     let searchQuery: string;
@@ -103,7 +141,12 @@ export const POST: APIRoute = async ({ request }) => {
     } else if (parsed.platform === 'soundcloud') {
       searchQuery = parsed.query;
     } else {
-      return errorResponse('Unsupported platform', 400);
+      // All other recognised platforms: fetch and clean the page title
+      const title = await getPageTitle(parsed.query);
+      if (!title) {
+        return errorResponse('Could not fetch page info from the music service', 400);
+      }
+      searchQuery = title;
     }
 
     // Search Spotify with the extracted query

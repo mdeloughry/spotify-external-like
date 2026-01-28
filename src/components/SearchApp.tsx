@@ -373,7 +373,18 @@ export default function SearchApp({ initialQuery }: SearchAppProps) {
             <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
           </svg>
           <span>
-            Imported from {urlImportSource === 'youtube' ? 'YouTube' : urlImportSource === 'soundcloud' ? 'SoundCloud' : 'Spotify'}
+            Imported from{" "}
+            {urlImportSource === 'youtube'
+              ? 'YouTube'
+              : urlImportSource === 'soundcloud'
+                ? 'SoundCloud'
+                : urlImportSource === 'deezer'
+                  ? 'Deezer'
+                  : urlImportSource === 'apple-music'
+                    ? 'Apple Music'
+                    : urlImportSource === 'bandcamp'
+                      ? 'Bandcamp'
+                      : 'Spotify'}
           </span>
         </div>
       )}
@@ -402,7 +413,8 @@ export default function SearchApp({ initialQuery }: SearchAppProps) {
               <p>Search for a track to get started</p>
               <p className="text-sm mt-2">Press <kbd className="px-1.5 py-0.5 bg-spotify-gray/50 rounded">/</kbd> to focus search</p>
               <p className="text-sm mt-4 text-spotify-lightgray/60">
-                Tip: Paste a YouTube or SoundCloud URL to find it on Spotify
+                Tip: Paste a YouTube, SoundCloud, Spotify, or most other music links to find them on
+                Spotify
               </p>
             </div>
           )}

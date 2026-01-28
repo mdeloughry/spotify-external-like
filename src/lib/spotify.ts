@@ -214,6 +214,106 @@ export function parseTrackUrl(url: string): { platform: string; query: string } 
       }
     }
 
+    // Deezer - use the full URL and resolve the title later
+    if (urlObj.hostname.includes('deezer.com')) {
+      return { platform: 'deezer', query: urlObj.toString() };
+    }
+
+    // Apple Music
+    if (urlObj.hostname.includes('music.apple.com')) {
+      return { platform: 'apple-music', query: urlObj.toString() };
+    }
+
+    // Bandcamp
+    if (urlObj.hostname.includes('bandcamp.com')) {
+      return { platform: 'bandcamp', query: urlObj.toString() };
+    }
+
+    // Tidal
+    if (urlObj.hostname.includes('tidal.com')) {
+      return { platform: 'tidal', query: urlObj.toString() };
+    }
+
+    // Amazon Music
+    if (urlObj.hostname.includes('music.amazon.')) {
+      return { platform: 'amazon-music', query: urlObj.toString() };
+    }
+
+    // YouTube Music
+    if (urlObj.hostname.includes('music.youtube.com')) {
+      return { platform: 'youtube-music', query: urlObj.toString() };
+    }
+
+    // Qobuz
+    if (urlObj.hostname.includes('qobuz.com')) {
+      return { platform: 'qobuz', query: urlObj.toString() };
+    }
+
+    // Beatport
+    if (urlObj.hostname.includes('beatport.com')) {
+      return { platform: 'beatport', query: urlObj.toString() };
+    }
+
+    // Traxsource
+    if (urlObj.hostname.includes('traxsource.com')) {
+      return { platform: 'traxsource', query: urlObj.toString() };
+    }
+
+    // Juno Download
+    if (urlObj.hostname.includes('junodownload.com') || urlObj.hostname.includes('juno.co.uk')) {
+      return { platform: 'juno', query: urlObj.toString() };
+    }
+
+    // Mixcloud
+    if (urlObj.hostname.includes('mixcloud.com')) {
+      return { platform: 'mixcloud', query: urlObj.toString() };
+    }
+
+    // Audiomack
+    if (urlObj.hostname.includes('audiomack.com')) {
+      return { platform: 'audiomack', query: urlObj.toString() };
+    }
+
+    // SoundClick
+    if (urlObj.hostname.includes('soundclick.com')) {
+      return { platform: 'soundclick', query: urlObj.toString() };
+    }
+
+    // ReverbNation
+    if (urlObj.hostname.includes('reverbnation.com')) {
+      return { platform: 'reverbnation', query: urlObj.toString() };
+    }
+
+    // Discogs
+    if (urlObj.hostname.includes('discogs.com')) {
+      return { platform: 'discogs', query: urlObj.toString() };
+    }
+
+    // MusicBrainz
+    if (urlObj.hostname.includes('musicbrainz.org')) {
+      return { platform: 'musicbrainz', query: urlObj.toString() };
+    }
+
+    // Genius
+    if (urlObj.hostname.includes('genius.com')) {
+      return { platform: 'genius', query: urlObj.toString() };
+    }
+
+    // Musixmatch
+    if (urlObj.hostname.includes('musixmatch.com')) {
+      return { platform: 'musixmatch', query: urlObj.toString() };
+    }
+
+    // Shazam
+    if (urlObj.hostname.includes('shazam.com')) {
+      return { platform: 'shazam', query: urlObj.toString() };
+    }
+
+    // Last.fm
+    if (urlObj.hostname.includes('last.fm')) {
+      return { platform: 'lastfm', query: urlObj.toString() };
+    }
+
     return null;
   } catch {
     return null;

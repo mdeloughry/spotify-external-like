@@ -4,7 +4,7 @@ import Layout from "../layouts/Layout.astro";
 
 <Layout
   title="Browser Extension - Spillover"
-  description="Install the Spillover browser extension to save tracks from any webpage to Spotify. Right-click any text or YouTube/SoundCloud link to search instantly."
+  description="Install the Spillover browser extension to save tracks from any webpage to Spotify. Right-click any text or YouTube, SoundCloud, Deezer, Apple Music, or Bandcamp link to search instantly."
   showBackLink={true}
   backHref="/"
   backLabel="Back to app"
@@ -90,8 +90,9 @@ import Layout from "../layouts/Layout.astro";
           </div>
           <h3 class="font-semibold text-lg mb-2">Import Links</h3>
           <p class="text-spotify-lightgray text-sm">
-            Right-click any YouTube or SoundCloud link and choose "Import to
-            Spillover" to find the track on Spotify.
+            Right-click any YouTube, SoundCloud, Deezer, Apple Music, or
+            Bandcamp link and choose "Import to Spillover" to find the track on
+            Spotify.
           </p>
         </div>
 
@@ -207,16 +208,25 @@ import Layout from "../layouts/Layout.astro";
 
       <script>
         const siteUrl = window.location.origin;
-        document.getElementById("siteUrl").textContent = siteUrl;
+        const siteUrlElement = document.getElementById("siteUrl");
+        const copyButton = document.getElementById("copyUrl");
 
-        document
-          .getElementById("copyUrl")
-          .addEventListener("click", async () => {
+        if (siteUrlElement) {
+          siteUrlElement.textContent = siteUrl;
+        }
+
+        if (copyButton) {
+          copyButton.addEventListener("click", async () => {
             await navigator.clipboard.writeText(siteUrl);
             const copyText = document.getElementById("copyText");
-            copyText.textContent = "Copied!";
-            setTimeout(() => (copyText.textContent = "Copy"), 2000);
+            if (copyText) {
+              copyText.textContent = "Copied!";
+              setTimeout(() => {
+                copyText.textContent = "Copy";
+              }, 2000);
+            }
           });
+        }
       </script>
 
       <!-- Installation Steps -->
@@ -376,12 +386,15 @@ import Layout from "../layouts/Layout.astro";
                 class="px-2 py-0.5 bg-spotify-green/20 text-spotify-green text-xs rounded"
                 >Method 2</span
               >
-              Import from YouTube/SoundCloud
+              Import from YouTube, SoundCloud, Deezer, Apple Music, Bandcamp
             </h4>
             <ol
               class="text-spotify-lightgray text-sm space-y-2 list-decimal list-inside"
             >
-              <li>Find a YouTube or SoundCloud link</li>
+              <li>
+                Find a YouTube, SoundCloud, Deezer, Apple Music, or Bandcamp
+                link
+              </li>
               <li>Right-click the link</li>
               <li>Click "Import to Spillover"</li>
               <li>Spillover extracts the track info and searches Spotify</li>

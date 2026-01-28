@@ -26,3 +26,9 @@ npm-debug.log*
 
 # astro
 .astro/
+
+# build output
+build/
+
+# claude
+.claude/

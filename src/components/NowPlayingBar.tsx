@@ -70,7 +70,7 @@ export default function NowPlayingBar({ track, isPlaying, onPlayPause, onStop, a
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-black to-spotify-black/95 border-t border-spotify-gray/30 backdrop-blur-lg z-50">
       <div className="max-w-4xl mx-auto px-4 py-3">
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
           {/* Track Info */}
           <div className="flex items-center gap-3 flex-1 min-w-0">
             {albumImage && (
@@ -87,7 +87,7 @@ export default function NowPlayingBar({ track, isPlaying, onPlayPause, onStop, a
           </div>
 
           {/* Controls */}
-          <div className="flex flex-col items-center gap-1 flex-1">
+          <div className="flex flex-col items-center gap-1 flex-1 w-full">
             <div className="flex items-center gap-4">
               <button
                 onClick={onPlayPause}

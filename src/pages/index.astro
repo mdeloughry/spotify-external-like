@@ -92,9 +92,11 @@ const initialUrl = Astro.url.searchParams.get("url") || "";
                 in your Spotify library.
               </p>
 
-              <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-                <AuthButton client:load isAuthenticated={false} />
-                <p class="text-xs text-spotify-lightgray">
+              <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+                <div class="shrink-0">
+                  <AuthButton client:load isAuthenticated={false} />
+                </div>
+                <p class="text-xs text-spotify-lightgray max-w-xs sm:ml-1">
                   No extra account. Just Spotify.
                 </p>
               </div>

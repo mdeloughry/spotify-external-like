@@ -28,8 +28,11 @@ const {
   noIndex = false,
 } = Astro.props;
 
-const canonicalUrl = new URL(Astro.url.pathname, "https://spillover.app").href;
-const ogImageUrl = new URL(ogImage, "https://spillover.app").href;
+const canonicalUrl = new URL(
+  Astro.url.pathname,
+  "https://spillover.loki.m4p.uk",
+).href;
+const ogImageUrl = new URL(ogImage, "https://spillover.loki.m4p.uk").href;
 const siteName = "Spillover";
 ---
 
@@ -44,7 +47,10 @@ const siteName = "Spillover";
     <meta name="title" content={title} />
     <meta name="description" content={description} />
     <meta name="author" content="Spillover" />
-    <meta name="keywords" content="spotify, music, save tracks, liked songs, playlists, youtube to spotify, soundcloud to spotify, music library" />
+    <meta
+      name="keywords"
+      content="spotify, music, save tracks, liked songs, playlists, youtube to spotify, soundcloud to spotify, music library"
+    />
 
     <!-- Canonical URL -->
     <link rel="canonical" href={canonicalUrl} />
@@ -64,7 +70,10 @@ const siteName = "Spillover";
     <meta property="og:image" content={ogImageUrl} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="Spillover - Save tracks from anywhere to Spotify" />
+    <meta
+      property="og:image:alt"
+      content="Spillover - Save tracks from anywhere to Spotify"
+    />
     <meta property="og:site_name" content={siteName} />
     <meta property="og:locale" content="en_US" />
 
@@ -74,7 +83,10 @@ const siteName = "Spillover";
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImageUrl} />
-    <meta name="twitter:image:alt" content="Spillover - Save tracks from anywhere to Spotify" />
+    <meta
+      name="twitter:image:alt"
+      content="Spillover - Save tracks from anywhere to Spotify"
+    />
 
     <!-- Theme Color -->
     <meta name="theme-color" content="#22c55e" />
@@ -84,7 +96,10 @@ const siteName = "Spillover";
     <meta name="application-name" content={siteName} />
     <meta name="apple-mobile-web-app-title" content={siteName} />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
     <meta name="format-detection" content="telephone=no" />
 
     <Analytics />

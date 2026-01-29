@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { SpotifyTrack } from '../lib/spotify';
-import { formatDuration } from '../lib/spotify';
+import { formatDuration, getAlbumImageUrl, formatArtists } from '../lib/spotify';
+import { copyTrackUrl } from '../lib/clipboard';
 
 interface TrackCardProps {
   track: SpotifyTrack & { isLiked: boolean };
@@ -14,29 +15,14 @@ export default function TrackCard({ track, onLikeToggle, onAddToPlaylist, isPlay
   const [isLiked, setIsLiked] = useState(track.isLiked);
   const [isLikeLoading, setIsLikeLoading] = useState(false);
 
-  const albumImage = track.album.images[1]?.url || track.album.images[0]?.url;
-  const artists = track.artists.map((a) => a.name).join(', ');
+  const albumImage = getAlbumImageUrl(track.album, 'medium');
+  const artists = formatArtists(track.artists);
   const hasPreview = !!track.preview_url;
 
   const handleShareClick = async () => {
-    try {
-      const url = track.external_urls?.spotify;
-      if (!url) return;
-
-      if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(url);
-      } else {
-        const textarea = document.createElement('textarea');
-        textarea.value = url;
-        textarea.style.position = 'fixed';
-        textarea.style.opacity = '0';
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textarea);
-      }
-    } catch (error) {
-      console.error('Failed to copy track URL to clipboard', error);
+    const result = await copyTrackUrl(track.external_urls?.spotify);
+    if (!result.success) {
+      console.error('Failed to copy track URL to clipboard:', result.error);
     }
   };
 

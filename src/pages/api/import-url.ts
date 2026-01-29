@@ -1,20 +1,17 @@
-import type { APIRoute } from 'astro';
-import { searchTracks, checkSavedTracks, getTrackById, parseTrackUrl } from '../../lib/spotify';
-import {
-  getAuthenticatedToken,
-  checkRateLimit,
-  getClientIdentifier,
-  validateUrl,
-  rateLimitResponse,
-  errorResponse,
-  log,
-} from '../../lib/api-utils';
+import { searchTracks, checkSavedTracks, getTrackById } from '../../lib/spotify';
+import { parseTrackUrl } from '../../lib/url-parser';
+import { withBodyApiHandler, validateUrl, errorResponse } from '../../lib/api-utils';
+import { RATE_LIMIT, API_PATHS, TIMEOUTS } from '../../lib/constants';
+
+interface ImportUrlRequestBody {
+  url: string;
+}
 
 // Fetch YouTube video title using oEmbed (no API key needed)
 async function getYouTubeTitle(videoId: string): Promise<string | null> {
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout
+    const timeoutId = setTimeout(() => controller.abort(), TIMEOUTS.EXTERNAL_API_MS);
 
     const response = await fetch(
       `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`,
@@ -40,7 +37,7 @@ async function getYouTubeTitle(videoId: string): Promise<string | null> {
 async function getPageTitle(targetUrl: string): Promise<string | null> {
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout
+    const timeoutId = setTimeout(() => controller.abort(), TIMEOUTS.EXTERNAL_API_MS);
 
     const response = await fetch(targetUrl, { signal: controller.signal });
     clearTimeout(timeoutId);
@@ -71,45 +68,21 @@ async function getPageTitle(targetUrl: string): Promise<string | null> {
   }
 }
 
-export const POST: APIRoute = async ({ request }) => {
-  const startTime = Date.now();
-  const path = '/api/import-url';
-
-  // Rate limiting
-  const clientId = getClientIdentifier(request);
-  const rateLimit = checkRateLimit(`import-url:${clientId}`, { windowMs: 60000, maxRequests: 30 });
-  if (!rateLimit.allowed) {
-    log({ level: 'warn', method: 'POST', path, clientId, error: 'Rate limited' });
-    return rateLimitResponse(rateLimit.resetIn);
-  }
-
-  // Authentication
-  const authResult = await getAuthenticatedToken(request);
-  if (!authResult.success) {
-    log({ level: 'info', method: 'POST', path, status: 401, duration: Date.now() - startTime });
-    return authResult.response;
-  }
-
-  const { token, headers } = authResult.data;
-
-  try {
-    const body = await request.json();
+export const POST = withBodyApiHandler<ImportUrlRequestBody>(
+  async ({ token, headers, logger, body }) => {
     const { url } = body;
 
     // Validation
     const urlValidation = validateUrl(url);
     if (!urlValidation.valid) {
-      log({ level: 'info', method: 'POST', path, status: 400, error: urlValidation.error });
+      logger.info(400);
       return errorResponse(urlValidation.error!, 400);
     }
 
     const parsed = parseTrackUrl(url);
     if (!parsed) {
-      log({ level: 'info', method: 'POST', path, status: 400, error: 'Unsupported URL format' });
-      return errorResponse(
-        'Unsupported URL format. Supported: YouTube, Spotify, SoundCloud, and most music sites.',
-        400
-      );
+      logger.info(400);
+      return errorResponse('Unsupported URL format. Supported: YouTube, Spotify, SoundCloud, and most music sites.', 400);
     }
 
     let searchQuery: string;
@@ -126,7 +99,7 @@ export const POST: APIRoute = async ({ request }) => {
       try {
         const directTrack = await getTrackById(parsed.query, token);
         const [isLiked] = await checkSavedTracks([directTrack.id], token);
-        log({ level: 'info', method: 'POST', path, status: 200, duration: Date.now() - startTime });
+        logger.info(200);
         return new Response(
           JSON.stringify({
             tracks: [{ ...directTrack, isLiked }],
@@ -165,7 +138,7 @@ export const POST: APIRoute = async ({ request }) => {
       isLiked: likedStatus[index] || false,
     }));
 
-    log({ level: 'info', method: 'POST', path, status: 200, duration: Date.now() - startTime });
+    logger.info(200);
     return new Response(
       JSON.stringify({
         tracks: tracksWithLiked,
@@ -174,9 +147,10 @@ export const POST: APIRoute = async ({ request }) => {
       }),
       { headers }
     );
-  } catch (err) {
-    const errorMessage = err instanceof Error ? err.message : 'Failed to import from URL';
-    log({ level: 'error', method: 'POST', path, status: 500, duration: Date.now() - startTime, error: errorMessage });
-    return errorResponse(errorMessage, 500);
+  },
+  {
+    path: API_PATHS.IMPORT_URL,
+    method: 'POST',
+    rateLimit: RATE_LIMIT.IMPORT_URL,
   }
-};
+);

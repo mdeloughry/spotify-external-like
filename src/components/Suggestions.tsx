@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import type { SpotifyTrack } from '../lib/spotify';
-import { formatDuration } from '../lib/spotify';
-
-type TrackWithLiked = SpotifyTrack & { isLiked: boolean };
+import type { TrackWithLiked } from '../lib/api-client';
+import { formatDuration, getAlbumImageUrl } from '../lib/spotify';
+import { UI } from '../lib/constants';
 
 interface SuggestionsProps {
   seedTrackIds: string[];
@@ -104,8 +104,8 @@ export default function Suggestions({
           )}
 
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-            {tracks.slice(0, 5).map((track) => {
-              const albumImage = track.album.images[1]?.url || track.album.images[0]?.url;
+            {tracks.slice(0, UI.MAX_SUGGESTIONS_GRID).map((track) => {
+              const albumImage = getAlbumImageUrl(track.album, 'medium');
               const isPlaying = playingTrackId === track.id;
 
               return (

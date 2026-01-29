@@ -7,9 +7,10 @@ import RecentActivity from './RecentActivity';
 import SpotifyNowPlaying from './SpotifyNowPlaying';
 import SidebarRecommendations from './SidebarRecommendations';
 import type { SpotifyTrack } from '../lib/spotify';
-import { parseTrackUrl } from '../lib/spotify';
-
-type TrackWithLiked = SpotifyTrack & { isLiked: boolean };
+import type { TrackWithLiked } from '../lib/api-client';
+import { parseTrackUrl } from '../lib/url-parser';
+import { useSearchHistory, useAudioPlayer, useKeyboardShortcuts, shortcutPresets } from '../hooks';
+import { UI } from '../lib/constants';
 
 interface SearchAppProps {
   initialQuery?: string;
@@ -22,39 +23,17 @@ interface RecentAction {
   timestamp: Date;
 }
 
-const SEARCH_HISTORY_KEY = 'spotify_search_history';
-const MAX_HISTORY = 10;
-
-function getSearchHistory(): string[] {
-  if (typeof window === 'undefined') return [];
-  const stored = localStorage.getItem(SEARCH_HISTORY_KEY);
-  return stored ? JSON.parse(stored) : [];
-}
-
-function addToSearchHistory(query: string) {
-  const history = getSearchHistory();
-  const filtered = history.filter((h) => h.toLowerCase() !== query.toLowerCase());
-  const updated = [query, ...filtered].slice(0, MAX_HISTORY);
-  localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(updated));
-  return updated;
-}
-
 export default function SearchApp({ initialQuery }: SearchAppProps) {
   const [tracks, setTracks] = useState<TrackWithLiked[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
   const [selectedTrack, setSelectedTrack] = useState<SpotifyTrack | null>(null);
-  const [playingTrackId, setPlayingTrackId] = useState<string | null>(null);
-  const [playingTrack, setPlayingTrack] = useState<SpotifyTrack | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
   const [recentActions, setRecentActions] = useState<RecentAction[]>([]);
-  const [searchHistory, setSearchHistory] = useState<string[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const [urlImportSource, setUrlImportSource] = useState<string | null>(null);
   const [spotifyCurrentTrack, setSpotifyCurrentTrack] = useState<SpotifyTrack | null>(null);
   const [announcement, setAnnouncement] = useState<string>('');
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
 
   // Helper to announce messages to screen readers
@@ -64,152 +43,55 @@ export default function SearchApp({ initialQuery }: SearchAppProps) {
     setTimeout(() => setAnnouncement(message), 100);
   };
 
-  // Load search history on mount
-  useEffect(() => {
-    setSearchHistory(getSearchHistory());
-  }, []);
+  // Use custom hooks for search history and audio player (DRY principle)
+  const { history: searchHistory, addToHistory, clearHistory: clearSearchHistory } = useSearchHistory();
+  const {
+    playingTrackId,
+    playingTrack,
+    isPlaying,
+    toggle: toggleAudio,
+    stop: stopAudio,
+    audioRef,
+  } = useAudioPlayer();
 
-  // Handle initial query from URL params (e.g., from browser extension)
-  const initialQueryProcessed = useRef(false);
-  useEffect(() => {
-    if (initialQuery && !initialQueryProcessed.current) {
-      initialQueryProcessed.current = true;
-      handleSearch(initialQuery);
+  const handleLikeToggle = useCallback(async (trackId: string, shouldLike: boolean) => {
+    const method = shouldLike ? 'POST' : 'DELETE';
+    const response = await fetch('/api/like', {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ trackId }),
+    });
+
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.error || 'Failed to update like status');
     }
-  }, [initialQuery]);
 
-  // Cleanup audio on unmount
-  useEffect(() => {
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
-    };
-  }, []);
+    // Update local state
+    setTracks((prev) =>
+      prev.map((track) =>
+        track.id === trackId ? { ...track, isLiked: shouldLike } : track
+      )
+    );
 
-  // Keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't trigger if typing in an input
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
-        // Allow Escape to blur input
-        if (e.key === 'Escape') {
-          (e.target as HTMLElement).blur();
-          setShowHistory(false);
+    // Add to recent actions if liked
+    if (shouldLike) {
+      setTracks((currentTracks) => {
+        const likedTrack = currentTracks.find((t) => t.id === trackId);
+        if (likedTrack) {
+          setRecentActions((prev) => [
+            { track: likedTrack, action: 'liked', timestamp: new Date() },
+            ...prev.slice(0, UI.MAX_RECENT_ACTIONS - 1),
+          ]);
         }
-        return;
-      }
-
-      switch (e.key) {
-        case '/':
-          e.preventDefault();
-          searchInputRef.current?.focus();
-          break;
-        case ' ':
-          e.preventDefault();
-          if (playingTrack) {
-            handlePlayPause();
-          }
-          break;
-        case 'Escape':
-          if (audioRef.current) {
-            audioRef.current.pause();
-            setPlayingTrackId(null);
-            setPlayingTrack(null);
-            setIsPlaying(false);
-          }
-          setShowHistory(false);
-          break;
-        case 'l':
-        case 'L':
-          // Like first track
-          if (tracks.length > 0 && !tracks[0].isLiked) {
-            handleLikeToggle(tracks[0].id, true);
-          }
-          break;
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [playingTrack, tracks]);
-
-  const handlePlayPause = useCallback(() => {
-    if (!audioRef.current) return;
-
-    if (isPlaying) {
-      audioRef.current.pause();
-      setIsPlaying(false);
-    } else {
-      audioRef.current.play();
-      setIsPlaying(true);
+        return currentTracks;
+      });
     }
-  }, [isPlaying]);
-
-  const handleStop = useCallback(() => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-    }
-    setPlayingTrackId(null);
-    setPlayingTrack(null);
-    setIsPlaying(false);
   }, []);
-
-  const handlePlayToggle = useCallback((track: SpotifyTrack) => {
-    if (!track.preview_url) return;
-
-    // If this track is already playing, toggle pause
-    if (playingTrackId === track.id) {
-      handlePlayPause();
-      return;
-    }
-
-    // Stop any currently playing audio
-    if (audioRef.current) {
-      audioRef.current.pause();
-    }
-
-    // Create new audio and play
-    const audio = new Audio(track.preview_url);
-    audio.volume = 0.5;
-    audioRef.current = audio;
-
-    audio.addEventListener('ended', () => {
-      setPlayingTrackId(null);
-      setPlayingTrack(null);
-      setIsPlaying(false);
-    });
-
-    audio.addEventListener('pause', () => {
-      setIsPlaying(false);
-    });
-
-    audio.addEventListener('play', () => {
-      setIsPlaying(true);
-    });
-
-    audio.play().then(() => {
-      setPlayingTrackId(track.id);
-      setPlayingTrack(track);
-      setIsPlaying(true);
-    }).catch((err) => {
-      console.error('Failed to play preview:', err);
-      setPlayingTrackId(null);
-      setPlayingTrack(null);
-      setIsPlaying(false);
-    });
-  }, [playingTrackId, handlePlayPause]);
 
   const handleSearch = useCallback(async (query: string) => {
     // Stop any playing audio when searching
-    if (audioRef.current) {
-      audioRef.current.pause();
-      setPlayingTrackId(null);
-      setPlayingTrack(null);
-      setIsPlaying(false);
-    }
+    stopAudio();
 
     setShowHistory(false);
     setIsLoading(true);
@@ -239,13 +121,11 @@ export default function SearchApp({ initialQuery }: SearchAppProps) {
         setUrlImportSource(data.source);
         if (data.searchQuery) {
           // Add the extracted search query to history instead of the URL
-          const updated = addToSearchHistory(data.searchQuery);
-          setSearchHistory(updated);
+          addToHistory(data.searchQuery);
         }
       } else {
         // Regular search
-        const updated = addToSearchHistory(query);
-        setSearchHistory(updated);
+        addToHistory(query);
 
         const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
         data = await response.json();
@@ -272,44 +152,61 @@ export default function SearchApp({ initialQuery }: SearchAppProps) {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [stopAudio, addToHistory]);
 
-  const handleLikeToggle = async (trackId: string, shouldLike: boolean) => {
-    const method = shouldLike ? 'POST' : 'DELETE';
-    const response = await fetch('/api/like', {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ trackId }),
-    });
-
-    if (!response.ok) {
-      const data = await response.json();
-      throw new Error(data.error || 'Failed to update like status');
+  // Handle initial query from URL params (e.g., from browser extension)
+  const initialQueryProcessed = useRef(false);
+  useEffect(() => {
+    if (initialQuery && !initialQueryProcessed.current) {
+      initialQueryProcessed.current = true;
+      handleSearch(initialQuery);
     }
+  }, [initialQuery, handleSearch]);
 
-    // Update local state
-    setTracks((prev) =>
-      prev.map((track) =>
-        track.id === trackId ? { ...track, isLiked: shouldLike } : track
-      )
-    );
-
-    // Add to recent actions and announce if liked
-    const likedTrack = tracks.find((t) => t.id === trackId);
-    if (likedTrack) {
-      if (shouldLike) {
-        setRecentActions((prev) => [
-          { track: likedTrack, action: 'liked', timestamp: new Date() },
-          ...prev.slice(0, 19),
-        ]);
-        announce(`${likedTrack.name} saved to Liked Songs`);
-      } else {
-        announce(`${likedTrack.name} removed from Liked Songs`);
+// Use keyboard shortcuts hook (DRY principle - replaces manual keydown handler)
+  useKeyboardShortcuts([
+    shortcutPresets.focusSearch(() => searchInputRef.current?.focus()),
+    shortcutPresets.escape((event) => {
+      // Blur input if focused
+      const target = event.target;
+      if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
+        target.blur();
       }
-    }
-  };
+      stopAudio();
+      setShowHistory(false);
+    }),
+    shortcutPresets.playPause(() => {
+      if (playingTrack && audioRef.current) {
+        if (isPlaying) {
+          audioRef.current.pause();
+        } else {
+          audioRef.current.play();
+        }
+      }
+    }),
+    shortcutPresets.like(() => {
+      if (tracks.length > 0 && !tracks[0].isLiked) {
+        handleLikeToggle(tracks[0].id, true);
+      }
+    }),
+    shortcutPresets.likeUpper(() => {
+      if (tracks.length > 0 && !tracks[0].isLiked) {
+        handleLikeToggle(tracks[0].id, true);
+      }
+    }),
+  ]);
 
-  const handleAddToPlaylist = async (playlistId: string, trackUri: string, playlistName?: string) => {
+  const handlePlayPause = useCallback(() => {
+    if (!audioRef.current) return;
+
+    if (isPlaying) {
+      audioRef.current.pause();
+    } else {
+      audioRef.current.play();
+    }
+  }, [isPlaying, audioRef]);
+
+  const handleAddToPlaylist = useCallback(async (playlistId: string, trackUri: string, playlistName?: string) => {
     const response = await fetch('/api/playlist/add', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -325,16 +222,11 @@ export default function SearchApp({ initialQuery }: SearchAppProps) {
     if (selectedTrack) {
       setRecentActions((prev) => [
         { track: selectedTrack, action: 'added_to_playlist', playlistName, timestamp: new Date() },
-        ...prev.slice(0, 19),
+        ...prev.slice(0, UI.MAX_RECENT_ACTIONS - 1),
       ]);
       announce(`${selectedTrack.name} added to ${playlistName || 'playlist'}`);
     }
-  };
-
-  const clearHistory = () => {
-    localStorage.removeItem(SEARCH_HISTORY_KEY);
-    setSearchHistory([]);
-  };
+  }, [selectedTrack]);
 
   return (
     <div className="relative flex flex-col space-y-6 rounded-3xl border border-white/8 bg-black/50 backdrop-blur-2xl px-5 py-6 sm:px-8 sm:py-7 shadow-[0_26px_90px_rgba(0,0,0,0.85)] max-h-[calc(100vh-7rem)] overflow-hidden">
@@ -368,7 +260,7 @@ export default function SearchApp({ initialQuery }: SearchAppProps) {
             <div className="flex items-center justify-between px-4 py-2 border-b border-spotify-gray/50">
               <span id="search-history-label" className="text-xs text-spotify-lightgray">Recent searches</span>
               <button
-                onClick={clearHistory}
+                onClick={clearSearchHistory}
                 className="text-xs text-spotify-lightgray hover:text-white"
                 aria-label="Clear search history"
               >
@@ -438,7 +330,7 @@ export default function SearchApp({ initialQuery }: SearchAppProps) {
         onTrackChange={setSpotifyCurrentTrack}
       />
 
-      {/* Main content area fills remaining card height and scrolls internally */}
+{/* Main content area fills remaining card height and scrolls internally */}
       <div className="flex-1 min-h-0">
         <div className="flex flex-col gap-8 lg:flex-row lg:items-start h-full min-h-0">
           {/* Track list column (scrollable) */}
@@ -450,7 +342,7 @@ export default function SearchApp({ initialQuery }: SearchAppProps) {
                   onLikeToggle={handleLikeToggle}
                   onAddToPlaylist={setSelectedTrack}
                   playingTrackId={playingTrackId}
-                  onPlayToggle={handlePlayToggle}
+                  onPlayToggle={toggleAudio}
                 />
               )}
 
@@ -502,7 +394,7 @@ export default function SearchApp({ initialQuery }: SearchAppProps) {
         track={playingTrack}
         isPlaying={isPlaying}
         onPlayPause={handlePlayPause}
-        onStop={handleStop}
+        onStop={stopAudio}
         audioRef={audioRef}
       />
     </div>

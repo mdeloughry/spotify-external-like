@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import type { SpotifyTrack } from '../lib/spotify';
-import { formatDuration } from '../lib/spotify';
+import type { TrackWithLiked } from '../lib/api-client';
+import { formatDuration, getAlbumImageUrl, formatArtists } from '../lib/spotify';
+import { copyTrackUrl } from '../lib/clipboard';
+import { POLLING, UI } from '../lib/constants';
 import PsychedelicVisualizer from './PsychedelicVisualizer';
-
-type TrackWithLiked = SpotifyTrack & { isLiked: boolean };
 
 interface NowPlayingData {
   playing: boolean;
@@ -26,40 +27,25 @@ export default function SpotifyNowPlaying({ onTrackSelect, onTrackChange }: Spot
   const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleShare = async () => {
-    try {
-      const url = nowPlaying?.track?.external_urls?.spotify;
-      if (!url) return;
-
-      if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(url);
-      } else {
-        const textarea = document.createElement('textarea');
-        textarea.value = url;
-        textarea.style.position = 'fixed';
-        textarea.style.opacity = '0';
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textarea);
-      }
-    } catch (error) {
-      console.error('Failed to copy track URL to clipboard', error);
+    const result = await copyTrackUrl(nowPlaying?.track?.external_urls?.spotify);
+    if (!result.success) {
+      console.error('Failed to copy track URL to clipboard:', result.error);
     }
   };
 
   const handleNowPlayingClick = () => {
     clickCountRef.current += 1;
 
-    // Reset click count after 2 seconds of no clicks
+    // Reset click count after timeout
     if (clickTimeoutRef.current) {
       clearTimeout(clickTimeoutRef.current);
     }
     clickTimeoutRef.current = setTimeout(() => {
       clickCountRef.current = 0;
-    }, 2000);
+    }, UI.MULTI_CLICK_TIMEOUT_MS);
 
-    // Trigger visualizer on 3rd click
-    if (clickCountRef.current >= 3) {
+    // Trigger visualizer on configured click count
+    if (clickCountRef.current >= UI.EASTER_EGG_CLICK_COUNT) {
       clickCountRef.current = 0;
       setShowVisualizer(true);
     }
@@ -86,19 +72,19 @@ export default function SpotifyNowPlaying({ onTrackSelect, onTrackChange }: Spot
     }
   }, [onTrackChange]);
 
-  // Poll for currently playing every 5 seconds
+  // Poll for currently playing
   useEffect(() => {
     fetchNowPlaying();
-    const interval = setInterval(fetchNowPlaying, 5000);
+    const interval = setInterval(fetchNowPlaying, POLLING.NOW_PLAYING_INTERVAL_MS);
     return () => clearInterval(interval);
   }, [fetchNowPlaying]);
 
-  // Update progress every second when playing
+  // Update progress when playing
   useEffect(() => {
     if (nowPlaying?.is_playing) {
       const interval = setInterval(() => {
-        setProgress((prev) => prev + 1000);
-      }, 1000);
+        setProgress((prev) => prev + POLLING.PROGRESS_UPDATE_INTERVAL_MS);
+      }, POLLING.PROGRESS_UPDATE_INTERVAL_MS);
       return () => clearInterval(interval);
     }
   }, [nowPlaying?.is_playing]);
@@ -116,6 +102,9 @@ export default function SpotifyNowPlaying({ onTrackSelect, onTrackChange }: Spot
 
       if (response.ok) {
         setIsLiked(!isLiked);
+      } else {
+        const data = await response.json().catch(() => ({}));
+        console.error('Failed to toggle like:', data.error || response.statusText);
       }
     } catch (err) {
       console.error('Failed to toggle like:', err);
@@ -127,7 +116,7 @@ export default function SpotifyNowPlaying({ onTrackSelect, onTrackChange }: Spot
   }
 
   const track = nowPlaying.track;
-  const albumImage = track.album.images[1]?.url || track.album.images[0]?.url;
+  const albumImage = getAlbumImageUrl(track.album, 'medium');
   const duration = track.duration_ms;
   const progressPercent = Math.min((progress / duration) * 100, 100);
 
@@ -174,7 +163,7 @@ export default function SpotifyNowPlaying({ onTrackSelect, onTrackChange }: Spot
             <span className="sr-only"> (opens in new tab)</span>
           </a>
           <p className="text-sm text-spotify-lightgray truncate">
-            {track.artists.map((a) => a.name).join(', ')}
+            {formatArtists(track.artists)}
           </p>
 
           {/* Progress Bar */}

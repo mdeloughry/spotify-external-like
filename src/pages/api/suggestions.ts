@@ -1,55 +1,31 @@
-import type { APIRoute } from 'astro';
 import { getTrackById, getArtistTopTracks, getRelatedArtists, checkSavedTracks } from '../../lib/spotify';
-import {
-  getAuthenticatedToken,
-  checkRateLimit,
-  getClientIdentifier,
-  rateLimitResponse,
-  errorResponse,
-  log,
-} from '../../lib/api-utils';
+import { withApiHandler, errorResponse } from '../../lib/api-utils';
+import { RATE_LIMIT, API_PATHS, VALIDATION, UI } from '../../lib/constants';
 
-export const GET: APIRoute = async ({ request }) => {
-  const startTime = Date.now();
-  const path = '/api/suggestions';
-  const url = new URL(request.url);
-  const trackIds = url.searchParams.get('seeds')?.split(',').filter(Boolean);
+export const GET = withApiHandler(
+  async ({ context, token, headers, logger }) => {
+    const url = new URL(context.request.url);
+    const trackIds = url.searchParams.get('seeds')?.split(',').filter(Boolean);
 
-  // Rate limiting
-  const clientId = getClientIdentifier(request);
-  const rateLimit = checkRateLimit(`suggestions:${clientId}`, { windowMs: 60000, maxRequests: 30 });
-  if (!rateLimit.allowed) {
-    log({ level: 'warn', method: 'GET', path, clientId, error: 'Rate limited' });
-    return rateLimitResponse(rateLimit.resetIn);
-  }
+    if (!trackIds || trackIds.length === 0) {
+      logger.info(400);
+      return errorResponse('Missing seed track IDs', 400);
+    }
 
-  if (!trackIds || trackIds.length === 0) {
-    return errorResponse('Missing seed track IDs', 400);
-  }
+    // Validate track IDs format
+    if (!trackIds.every(id => VALIDATION.SPOTIFY_ID_PATTERN.test(id))) {
+      logger.info(400);
+      return errorResponse('Invalid track ID format', 400);
+    }
 
-  // Validate track IDs format
-  const validTrackIdPattern = /^[a-zA-Z0-9]{22}$/;
-  if (!trackIds.every(id => validTrackIdPattern.test(id))) {
-    return errorResponse('Invalid track ID format', 400);
-  }
-
-  // Authentication
-  const authResult = await getAuthenticatedToken(request);
-  if (!authResult.success) {
-    log({ level: 'info', method: 'GET', path, status: 401, duration: Date.now() - startTime });
-    return authResult.response;
-  }
-
-  const { token, headers } = authResult.data;
-
-  try {
     // Get the seed tracks to find their artists
     const seedTracks = await Promise.all(
-      trackIds.slice(0, 2).map((id) => getTrackById(id, token).catch(() => null))
+      trackIds.slice(0, UI.MAX_SEED_TRACKS).map((id) => getTrackById(id, token).catch(() => null))
     );
 
     const validTracks = seedTracks.filter(Boolean);
     if (validTracks.length === 0) {
+      logger.info(200);
       return new Response(JSON.stringify({ tracks: [] }), { headers });
     }
 
@@ -91,8 +67,8 @@ export const GET: APIRoute = async ({ request }) => {
       return true;
     });
 
-    // Limit to 10 tracks
-    const finalTracks = uniqueTracks.slice(0, 10);
+    // Limit results
+    const finalTracks = uniqueTracks.slice(0, UI.MAX_SUGGESTIONS_API);
 
     // Check which tracks are already liked
     const recTrackIds = finalTracks.map((track) => track.id);
@@ -108,16 +84,17 @@ export const GET: APIRoute = async ({ request }) => {
       isLiked: likedStatus[index] || false,
     }));
 
-    log({ level: 'info', method: 'GET', path, status: 200, duration: Date.now() - startTime });
+    logger.info(200);
     return new Response(
       JSON.stringify({
         tracks: tracksWithLiked,
       }),
       { headers }
     );
-  } catch (err) {
-    const errorMessage = err instanceof Error ? err.message : 'Failed to get suggestions';
-    log({ level: 'error', method: 'GET', path, status: 500, duration: Date.now() - startTime, error: errorMessage });
-    return errorResponse(errorMessage, 500);
+  },
+  {
+    path: API_PATHS.SUGGESTIONS,
+    method: 'GET',
+    rateLimit: RATE_LIMIT.SUGGESTIONS,
   }
-};
+);

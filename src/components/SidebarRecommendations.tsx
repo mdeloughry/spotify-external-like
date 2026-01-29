@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { SpotifyTrack } from '../lib/spotify';
-
-type TrackWithLiked = SpotifyTrack & { isLiked: boolean };
+import type { TrackWithLiked } from '../lib/api-client';
+import { getAlbumImageUrl } from '../lib/spotify';
+import { UI } from '../lib/constants';
 
 interface SidebarRecommendationsProps {
   currentTrack: SpotifyTrack | null;
@@ -76,8 +77,8 @@ export default function SidebarRecommendations({ currentTrack, onTrackSelect }: 
         </div>
 
         <div className="max-h-80 overflow-y-auto">
-          {recommendations.slice(0, 4).map((track) => {
-            const albumImage = track.album.images[2]?.url || track.album.images[0]?.url;
+          {recommendations.slice(0, UI.MAX_SUGGESTIONS_SIDEBAR).map((track) => {
+            const albumImage = getAlbumImageUrl(track.album, 'small');
 
             return (
               <div

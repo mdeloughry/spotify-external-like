@@ -1,5 +1,7 @@
 import type { APIRoute } from 'astro';
 import { getAuthUrl, generateState } from '../../../lib/auth';
+import { getCookieOptions } from '../../../lib/api/security';
+import { COOKIES } from '../../../lib/constants';
 
 export const GET: APIRoute = async () => {
   const state = generateState();
@@ -9,7 +11,7 @@ export const GET: APIRoute = async () => {
     status: 302,
     headers: {
       Location: authUrl,
-      'Set-Cookie': `spotify_auth_state=${state}; Path=/; HttpOnly; SameSite=Lax; Max-Age=600`,
+      'Set-Cookie': `${COOKIES.AUTH_STATE}=${state}; ${getCookieOptions(COOKIES.AUTH_STATE_MAX_AGE)}`,
     },
   });
 };

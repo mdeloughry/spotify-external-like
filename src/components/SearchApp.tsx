@@ -74,20 +74,20 @@ export default function SearchApp({ initialQuery }: SearchAppProps) {
       )
     );
 
-    // Add to recent actions if liked
-    if (shouldLike) {
-      setTracks((currentTracks) => {
-        const likedTrack = currentTracks.find((t) => t.id === trackId);
-        if (likedTrack) {
-          setRecentActions((prev) => [
-            { track: likedTrack, action: 'liked', timestamp: new Date() },
-            ...prev.slice(0, UI.MAX_RECENT_ACTIONS - 1),
-          ]);
-        }
-        return currentTracks;
-      });
+    // Add to recent actions and announce to screen readers
+    const likedTrack = tracks.find((t) => t.id === trackId);
+    if (likedTrack) {
+      if (shouldLike) {
+        setRecentActions((prev) => [
+          { track: likedTrack, action: 'liked', timestamp: new Date() },
+          ...prev.slice(0, UI.MAX_RECENT_ACTIONS - 1),
+        ]);
+        announce(`${likedTrack.name} saved to Liked Songs`);
+      } else {
+        announce(`${likedTrack.name} removed from Liked Songs`);
+      }
     }
-  }, []);
+  }, [tracks]);
 
   const handleSearch = useCallback(async (query: string) => {
     // Stop any playing audio when searching

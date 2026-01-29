@@ -39,7 +39,7 @@ class YouTubeParser implements PlatformParser {
     const hostname = url.hostname.toLowerCase();
     // youtu.be/VIDEO_ID
     if (hostname === 'youtu.be') {
-      const videoId = url.pathname.slice(1).split('?')[0];
+      const videoId = url.pathname.slice(1);
       return videoId || null;
     }
 
@@ -54,7 +54,7 @@ class YouTubeParser implements PlatformParser {
     if (segments.length >= 2) {
       const [first, second] = segments;
       if ((first === 'embed' || first === 'shorts' || first === 'v') && second) {
-        return second.split('?')[0];
+        return second;
       }
     }
 

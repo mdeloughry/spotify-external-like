@@ -38,6 +38,7 @@ export function useAudioPlayer(): UseAudioPlayerReturn {
     return () => {
       if (audioRef.current) {
         audioRef.current.pause();
+        audioRef.current.src = '';
         audioRef.current = null;
       }
     };
@@ -63,9 +64,11 @@ export function useAudioPlayer(): UseAudioPlayerReturn {
   const play = useCallback((track: SpotifyTrack) => {
     if (!track.preview_url) return;
 
-    // Stop any currently playing audio
+    // Clean up any existing audio element and its listeners
     if (audioRef.current) {
       audioRef.current.pause();
+      audioRef.current.src = '';
+      audioRef.current = null;
     }
 
     // Create new audio and play
@@ -73,19 +76,23 @@ export function useAudioPlayer(): UseAudioPlayerReturn {
     audio.volume = UI.DEFAULT_AUDIO_VOLUME;
     audioRef.current = audio;
 
-    audio.addEventListener('ended', () => {
+    const handleEnded = () => {
       setPlayingTrackId(null);
       setPlayingTrack(null);
       setIsPlaying(false);
-    });
+    };
 
-    audio.addEventListener('pause', () => {
+    const handlePause = () => {
       setIsPlaying(false);
-    });
+    };
 
-    audio.addEventListener('play', () => {
+    const handlePlay = () => {
       setIsPlaying(true);
-    });
+    };
+
+    audio.addEventListener('ended', handleEnded);
+    audio.addEventListener('pause', handlePause);
+    audio.addEventListener('play', handlePlay);
 
     audio.play().then(() => {
       setPlayingTrackId(track.id);

@@ -148,7 +148,12 @@ export default function SearchApp({ initialQuery }: SearchAppProps) {
   // Use keyboard shortcuts hook (DRY principle - replaces manual keydown handler)
   useKeyboardShortcuts([
     shortcutPresets.focusSearch(() => searchInputRef.current?.focus()),
-    shortcutPresets.escape(() => {
+    shortcutPresets.escape((event) => {
+      // Blur input if focused
+      const target = event.target;
+      if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
+        target.blur();
+      }
       stopAudio();
       setShowHistory(false);
     }),

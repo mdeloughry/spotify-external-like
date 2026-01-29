@@ -112,39 +112,41 @@ export function useKeyboardShortcuts(
   }, [handleKeyDown, enabled]);
 }
 
+type ShortcutHandler = (event: KeyboardEvent) => void;
+
 /**
  * Common shortcut presets
  */
 export const shortcutPresets = {
   /** Focus search input */
-  focusSearch: (handler: () => void): KeyboardShortcut => ({
+  focusSearch: (handler: ShortcutHandler): KeyboardShortcut => ({
     key: '/',
     handler,
     preventDefault: true,
   }),
 
   /** Escape key (works in inputs) */
-  escape: (handler: () => void): KeyboardShortcut => ({
+  escape: (handler: ShortcutHandler): KeyboardShortcut => ({
     key: 'Escape',
     handler,
     allowInInput: true,
   }),
 
   /** Space for play/pause */
-  playPause: (handler: () => void): KeyboardShortcut => ({
+  playPause: (handler: ShortcutHandler): KeyboardShortcut => ({
     key: ' ',
     handler,
     preventDefault: true,
   }),
 
   /** L for like */
-  like: (handler: () => void): KeyboardShortcut => ({
+  like: (handler: ShortcutHandler): KeyboardShortcut => ({
     key: 'l',
     handler,
   }),
 
   /** Uppercase L for like */
-  likeUpper: (handler: () => void): KeyboardShortcut => ({
+  likeUpper: (handler: ShortcutHandler): KeyboardShortcut => ({
     key: 'L',
     handler,
   }),

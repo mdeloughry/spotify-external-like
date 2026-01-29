@@ -25,15 +25,20 @@ class YouTubeParser implements PlatformParser {
   readonly platform = 'youtube';
 
   match(url: URL): boolean {
+    const hostname = url.hostname.toLowerCase();
     return (
-      url.hostname.includes('youtube.com') ||
-      url.hostname.includes('youtu.be')
+      hostname === 'youtu.be' ||
+      hostname === 'youtube.com' ||
+      hostname === 'www.youtube.com' ||
+      hostname === 'm.youtube.com' ||
+      hostname.endsWith('.youtube.com')
     );
   }
 
   parse(url: URL): string | null {
+    const hostname = url.hostname.toLowerCase();
     // youtu.be/VIDEO_ID
-    if (url.hostname.includes('youtu.be')) {
+    if (hostname === 'youtu.be') {
       const videoId = url.pathname.slice(1);
       return videoId || null;
     }
@@ -48,7 +53,8 @@ class SoundCloudParser implements PlatformParser {
   readonly platform = 'soundcloud';
 
   match(url: URL): boolean {
-    return url.hostname.includes('soundcloud.com');
+    const hostname = url.hostname.toLowerCase();
+    return hostname === 'soundcloud.com' || hostname.endsWith('.soundcloud.com');
   }
 
   parse(url: URL): string | null {
@@ -65,7 +71,8 @@ class SpotifyUrlParser implements PlatformParser {
   readonly platform = 'spotify';
 
   match(url: URL): boolean {
-    return url.hostname.includes('spotify.com');
+    const hostname = url.hostname.toLowerCase();
+    return hostname === 'spotify.com' || hostname.endsWith('.spotify.com');
   }
 
   parse(url: URL): string | null {

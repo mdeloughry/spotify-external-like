@@ -7,7 +7,7 @@ import type { APIRoute, APIContext } from 'astro';
 import { checkRateLimit, getClientIdentifier, type RateLimitConfig } from './rate-limit';
 import { getAuthenticatedToken, type AuthResult } from './auth-middleware';
 import { createRequestLogger } from './logger';
-import { errorResponse, rateLimitResponse, jsonResponse } from './response';
+import { errorResponse, rateLimitResponse } from './response';
 import { RATE_LIMIT } from '../constants';
 
 export interface ApiHandlerContext {
@@ -63,7 +63,7 @@ export function withApiHandler(
   const {
     path,
     method,
-    rateLimit = RATE_LIMIT.SEARCH,
+    rateLimit = { windowMs: RATE_LIMIT.DEFAULT_WINDOW_MS, maxRequests: RATE_LIMIT.DEFAULT_MAX_REQUESTS },
     requireAuth = true,
     parseBody = false,
     rateLimitKey,

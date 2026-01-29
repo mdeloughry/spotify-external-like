@@ -61,12 +61,7 @@ export interface LikeResponse {
 }
 
 export interface SuggestionsResponse {
-  suggestions: TrackWithLiked[];
-  seed: {
-    trackId: string;
-    trackName: string;
-    artistName: string;
-  };
+  tracks: TrackWithLiked[];
 }
 
 export interface HealthResponse {

@@ -11,7 +11,7 @@ Originally created as an **experiment using Claude Code** to drive implementatio
 - **Quick Search** - Search Spotify's catalog with instant results
 - **One-Click Like** - Save tracks to your Liked Songs instantly
 - **Playlist Support** - Add tracks to any of your playlists
-- **URL Import** - Paste YouTube, SoundCloud, or Spotify URLs to find tracks
+- **URL Import** - Paste YouTube, SoundCloud, Deezer, Apple Music, Bandcamp, or Spotify URLs to find tracks
 - **Now Playing** - See what's currently playing on Spotify with recommendations
 - **Browser Extension** - Right-click any page to search for tracks
 - **Privacy First** - No data stored on servers, optional anonymous analytics

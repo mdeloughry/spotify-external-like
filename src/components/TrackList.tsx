@@ -12,12 +12,13 @@ interface TrackListProps {
 export default function TrackList({ tracks, onLikeToggle, onAddToPlaylist, playingTrackId, onPlayToggle }: TrackListProps) {
   if (tracks.length === 0) {
     return (
-      <div className="text-center py-12 text-spotify-lightgray">
+      <div className="text-center py-12 text-spotify-lightgray" role="status">
         <svg
           className="w-16 h-16 mx-auto mb-4 opacity-50"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
+          aria-hidden="true"
         >
           <path
             strokeLinecap="round"
@@ -32,17 +33,41 @@ export default function TrackList({ tracks, onLikeToggle, onAddToPlaylist, playi
   }
 
   return (
-    <div className="space-y-1">
-      {tracks.map((track) => (
-        <TrackCard
-          key={track.id}
-          track={track}
-          onLikeToggle={onLikeToggle}
-          onAddToPlaylist={onAddToPlaylist}
-          isPlaying={playingTrackId === track.id}
-          onPlayToggle={onPlayToggle}
-        />
-      ))}
-    </div>
+    <>
+      <style>{`
+        .track-list-scroll::-webkit-scrollbar {
+          width: 8px;
+        }
+        .track-list-scroll::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .track-list-scroll::-webkit-scrollbar-thumb {
+          background-color: rgba(255, 255, 255, 0.2);
+          border-radius: 4px;
+        }
+        .track-list-scroll::-webkit-scrollbar-thumb:hover {
+          background-color: rgba(255, 255, 255, 0.3);
+        }
+        .track-list-scroll {
+          scrollbar-width: thin;
+          scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+        }
+      `}</style>
+      <div className="track-list-scroll max-h-[60vh] overflow-y-scroll pr-1 w-full">
+        <ul role="list" aria-label="Search results" className="space-y-1 w-full">
+          {tracks.map((track) => (
+            <li key={track.id} className="w-full min-w-0 max-w-full">
+              <TrackCard
+                track={track}
+                onLikeToggle={onLikeToggle}
+                onAddToPlaylist={onAddToPlaylist}
+                isPlaying={playingTrackId === track.id}
+                onPlayToggle={onPlayToggle}
+              />
+            </li>
+          ))}
+        </ul>
+      </div>
+    </>
   );
 }

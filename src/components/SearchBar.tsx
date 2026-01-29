@@ -54,9 +54,13 @@ export default function SearchBar({ onSearch, isLoading, inputRef, onFocus, onBl
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-2xl mx-auto">
+    <form onSubmit={handleSubmit} className="w-full max-w-2xl mx-auto" role="search">
       <div className="relative">
+        <label htmlFor="search-input" className="sr-only">
+          Search for tracks, artists, or paste a URL
+        </label>
         <input
+          id="search-input"
           ref={ref as React.RefObject<HTMLInputElement>}
           type="text"
           value={query}
@@ -65,12 +69,15 @@ export default function SearchBar({ onSearch, isLoading, inputRef, onFocus, onBl
           onBlur={onBlur}
           placeholder="Search for tracks, artists, or paste a URL..."
           className="w-full px-4 py-3 pl-12 text-lg bg-spotify-gray/30 border border-spotify-gray/50 rounded-full text-white placeholder-spotify-lightgray focus:outline-none focus:border-spotify-green focus:ring-2 focus:ring-spotify-green/20 transition-all"
+          autoComplete="off"
+          aria-autocomplete="list"
         />
         <svg
           className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-spotify-lightgray"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
+          aria-hidden="true"
         >
           <path
             strokeLinecap="round"
@@ -80,8 +87,9 @@ export default function SearchBar({ onSearch, isLoading, inputRef, onFocus, onBl
           />
         </svg>
         {isLoading && (
-          <div className="absolute right-4 top-1/2 -translate-y-1/2">
-            <div className="w-5 h-5 border-2 border-spotify-green border-t-transparent rounded-full animate-spin" />
+          <div className="absolute right-4 top-1/2 -translate-y-1/2" role="status" aria-label="Searching">
+            <div className="w-5 h-5 border-2 border-spotify-green border-t-transparent rounded-full animate-spin" aria-hidden="true" />
+            <span className="sr-only">Searching...</span>
           </div>
         )}
       </div>

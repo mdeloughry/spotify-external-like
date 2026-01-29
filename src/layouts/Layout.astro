@@ -18,7 +18,7 @@ interface Props {
 
 const {
   title,
-  description = "Catch songs from outside Spotify, and keep them. Save tracks to your Liked Songs and playlists from YouTube, SoundCloud, and anywhere else.",
+  description = "Catch songs from outside Spotify, and keep them. Save tracks to your Liked Songs and playlists from YouTube, SoundCloud, Deezer, Apple Music, Bandcamp, and anywhere else.",
   ogImage = "/og-image.png",
   showAuthHeader = false,
   isAuthenticated = false,
@@ -105,6 +105,14 @@ const siteName = "Spillover";
     <Analytics />
   </head>
   <body class="min-h-screen text-white antialiased">
+    <!-- Skip link for keyboard users -->
+    <a
+      href="#main-content"
+      class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[100] focus:bg-spotify-green focus:text-black focus:px-4 focus:py-2 focus:rounded-lg focus:font-medium focus:outline-none focus:ring-2 focus:ring-white"
+    >
+      Skip to main content
+    </a>
+
     <div class="relative min-h-screen overflow-hidden">
       <!-- Subtle demoscene-style field -->
       <div
@@ -120,7 +128,7 @@ const siteName = "Spillover";
           backHref={backHref}
           backLabel={backLabel}
         />
-        <main class="flex-1">
+        <main id="main-content" class="flex-1">
           <slot />
         </main>
         <SiteFooter />
@@ -209,5 +217,38 @@ const siteName = "Spillover";
   .animate-orbit-field {
     animation: orbit-field 42s linear infinite;
     will-change: transform;
+  }
+
+  /* Screen reader only utility */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  /* Respect reduced motion preferences */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+
+    .animate-spin,
+    .animate-slide-up,
+    .animate-scale-in,
+    .animate-orbit-field,
+    .animate-pulse {
+      animation: none !important;
+    }
   }
 </style>

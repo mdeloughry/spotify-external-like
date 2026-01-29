@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { SpotifyTrack } from '../lib/spotify';
 import { formatDuration } from '../lib/spotify';
+import TruncatedText from './TruncatedText';
 
 interface TrackCardProps {
   track: SpotifyTrack & { isLiked: boolean };
@@ -98,17 +99,12 @@ export default function TrackCard({ track, onLikeToggle, onAddToPlaylist, isPlay
             rel="noopener noreferrer"
             className="block text-sm font-medium text-white hover:text-emerald-200"
             aria-label={`${track.name} (opens in Spotify)`}
-            title={track.name}
           >
-            <span className="block truncate">{track.name}</span>
+            <TruncatedText text={track.name} className="text-sm font-medium" />
             <span className="sr-only"> (opens in new tab)</span>
           </a>
-          <p className="text-xs text-spotify-lightgray truncate" title={artists}>
-            {artists}
-          </p>
-          <p className="mt-1 text-xs text-spotify-lightgray/70 truncate" title={track.album.name}>
-            {track.album.name}
-          </p>
+          <TruncatedText text={artists} className="text-xs text-spotify-lightgray" />
+          <TruncatedText text={track.album.name} className="mt-1 text-xs text-spotify-lightgray/70" />
         </div>
 
         {/* Meta + Actions */}

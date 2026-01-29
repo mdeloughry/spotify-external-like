@@ -202,6 +202,21 @@ const siteName = "Spillover";
     animation: scale-in 0.2s ease-out;
   }
 
+  @keyframes tooltip-fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-tooltip-fade-in {
+    animation: tooltip-fade-in 0.15s ease-out;
+  }
+
   @keyframes orbit-field {
     0% {
       transform: translate3d(0, 0, 0) rotate(0deg);

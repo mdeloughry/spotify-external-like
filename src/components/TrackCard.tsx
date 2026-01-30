@@ -39,6 +39,7 @@ export default function TrackCard({
   const [isQueueLoading, setIsQueueLoading] = useState(false);
   const [isPlayLoading, setIsPlayLoading] = useState(false);
   const [queueSuccess, setQueueSuccess] = useState(false);
+  const [queueError, setQueueError] = useState<string | null>(null);
 
   const albumImage = getAlbumImageUrl(track.album, 'medium');
   const artists = formatArtists(track.artists);
@@ -74,6 +75,7 @@ export default function TrackCard({
 
     setIsQueueLoading(true);
     setQueueSuccess(false);
+    setQueueError(null);
     try {
       await onAddToQueue(track);
       setQueueSuccess(true);
@@ -81,6 +83,10 @@ export default function TrackCard({
       setTimeout(() => setQueueSuccess(false), 2000);
     } catch (err) {
       console.error('Failed to add to queue:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to add to queue';
+      setQueueError(errorMessage);
+      // Clear error after 3 seconds
+      setTimeout(() => setQueueError(null), 3000);
     } finally {
       setIsQueueLoading(false);
     }
@@ -235,6 +241,8 @@ export default function TrackCard({
                 className={`p-2.5 sm:p-2 min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 rounded-full transition-colors flex items-center justify-center ${
                   queueSuccess
                     ? 'text-spotify-green'
+                    : queueError
+                    ? 'text-red-400'
                     : 'text-spotify-lightgray hover:text-white'
                 } disabled:opacity-50`}
                 aria-label={`Add ${track.name} to queue`}
@@ -296,6 +304,13 @@ export default function TrackCard({
           </div>
         </div>
       </div>
+
+      {/* Queue error message */}
+      {queueError && (
+        <div className="px-4 py-2 bg-red-500/10 border-t border-red-500/20" role="alert">
+          <p className="text-xs text-red-400">{queueError}</p>
+        </div>
+      )}
     </div>
   );
 }

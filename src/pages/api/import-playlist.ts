@@ -1,10 +1,12 @@
 import { searchTracks, checkSavedTracks, getPlaylistTracks as getSpotifyPlaylistTracks } from '../../lib/spotify';
-import { parsePlaylistUrl } from '../../lib/playlist-parser';
+import { parsePlaylistUrl, parseTextTracks, isTextTrackList } from '../../lib/playlist-parser';
 import { withBodyApiHandler, validateUrl, errorResponse } from '../../lib/api-utils';
 import { RATE_LIMIT, TIMEOUTS } from '../../lib/constants';
 import type { SpotifyTrack } from '../../lib/spotify';
 
+/** Request body for playlist import - can be URL or text */
 interface ImportPlaylistRequestBody {
+  /** URL of playlist to import, or plain text track list */
   url: string;
 }
 
@@ -196,52 +198,28 @@ export const POST = withBodyApiHandler<ImportPlaylistRequestBody>(
   async ({ token, headers, logger, body }) => {
     const { url } = body;
 
-    // Validation
-    const urlValidation = validateUrl(url);
-    if (!urlValidation.valid) {
+    if (!url || typeof url !== 'string' || url.trim().length === 0) {
       logger.info(400);
-      return errorResponse(urlValidation.error!, 400);
+      return errorResponse('Missing input. Provide a playlist URL or paste a list of tracks.', 400);
     }
 
-    const parsed = parsePlaylistUrl(url);
-    if (!parsed) {
-      logger.info(400);
-      return errorResponse('Not a valid playlist URL. Supported: YouTube, Spotify, SoundCloud, Deezer, Apple Music, Tidal, Amazon Music playlists.', 400);
-    }
-
+    const input = url.trim();
     let importedTracks: ImportedTrack[] = [];
     let playlistName = '';
+    let platform = 'text';
 
-    // Handle Spotify playlists directly (no scraping needed)
-    if (parsed.platform === 'spotify') {
-      const result = await getSpotifyPlaylistTracksInfo(parsed.playlistId, token);
-      playlistName = result.name;
+    // Check if input is a plain text track list
+    if (isTextTrackList(input)) {
+      const textTracks = parseTextTracks(input);
 
-      importedTracks = result.tracks.map(track => ({
-        originalTitle: track.name,
-        originalArtist: track.artists[0]?.name,
-        spotifyTrack: track,
-        status: 'found' as const,
-      }));
-    } else {
-      // For other platforms, scrape and search
-      let trackInfos: PlaylistTrackInfo[] = [];
-
-      if (parsed.platform === 'youtube') {
-        const isYouTubeMusic = parsed.url.includes('music.youtube.com');
-        trackInfos = await getYouTubePlaylistTracks(parsed.playlistId, isYouTubeMusic);
-      } else {
-        trackInfos = await getPagePlaylistTracks(parsed.url, parsed.platform);
-      }
-
-      if (trackInfos.length === 0) {
+      if (!textTracks || textTracks.length === 0) {
         logger.info(400);
-        return errorResponse('Could not extract tracks from this playlist. The playlist may be private or empty.', 400);
+        return errorResponse('Could not parse track list. Try format: "Artist - Title" (one per line)', 400);
       }
 
-      // Search Spotify for each track (limit concurrent requests)
+      // Search Spotify for each track
       const searchResults = await Promise.all(
-        trackInfos.slice(0, 50).map(async (info) => {
+        textTracks.slice(0, 50).map(async (info) => {
           const searchQuery = info.artist
             ? `${info.title} ${info.artist}`
             : info.title;
@@ -278,6 +256,91 @@ export const POST = withBodyApiHandler<ImportPlaylistRequestBody>(
       );
 
       importedTracks = searchResults;
+      playlistName = 'Text Import';
+      platform = 'text';
+    } else {
+      // Try to parse as URL
+      const urlValidation = validateUrl(input);
+      if (!urlValidation.valid) {
+        logger.info(400);
+        return errorResponse(urlValidation.error!, 400);
+      }
+
+      const parsed = parsePlaylistUrl(input);
+      if (!parsed) {
+        logger.info(400);
+        return errorResponse('Not a valid playlist URL. Supported: YouTube, Spotify, SoundCloud, Deezer, Apple Music, Tidal, Amazon Music. Or paste a list of tracks (one per line).', 400);
+      }
+
+      platform = parsed.platform;
+
+      // Handle Spotify playlists directly (no scraping needed)
+      if (parsed.platform === 'spotify') {
+        const result = await getSpotifyPlaylistTracksInfo(parsed.playlistId, token);
+        playlistName = result.name;
+
+        importedTracks = result.tracks.map(track => ({
+          originalTitle: track.name,
+          originalArtist: track.artists[0]?.name,
+          spotifyTrack: track,
+          status: 'found' as const,
+        }));
+      } else {
+        // For other platforms, scrape and search
+        let trackInfos: PlaylistTrackInfo[] = [];
+
+        if (parsed.platform === 'youtube') {
+          const isYouTubeMusic = parsed.url.includes('music.youtube.com');
+          trackInfos = await getYouTubePlaylistTracks(parsed.playlistId, isYouTubeMusic);
+        } else {
+          trackInfos = await getPagePlaylistTracks(parsed.url, parsed.platform);
+        }
+
+        if (trackInfos.length === 0) {
+          logger.info(400);
+          return errorResponse('Could not extract tracks from this playlist. The playlist may be private or empty.', 400);
+        }
+
+        // Search Spotify for each track (limit concurrent requests)
+        const searchResults = await Promise.all(
+          trackInfos.slice(0, 50).map(async (info) => {
+            const searchQuery = info.artist
+              ? `${info.title} ${info.artist}`
+              : info.title;
+
+            try {
+              const result = await searchTracks(searchQuery, token, 1);
+              const track = result.tracks.items[0] || null;
+
+              if (track) {
+                const [isLiked] = await checkSavedTracks([track.id], token);
+                return {
+                  originalTitle: info.title,
+                  originalArtist: info.artist,
+                  spotifyTrack: { ...track, isLiked },
+                  status: 'found' as const,
+                };
+              }
+
+              return {
+                originalTitle: info.title,
+                originalArtist: info.artist,
+                spotifyTrack: null,
+                status: 'not_found' as const,
+              };
+            } catch {
+              return {
+                originalTitle: info.title,
+                originalArtist: info.artist,
+                spotifyTrack: null,
+                status: 'not_found' as const,
+              };
+            }
+          })
+        );
+
+        importedTracks = searchResults;
+      }
     }
 
     const foundCount = importedTracks.filter(t => t.status === 'found').length;
@@ -286,7 +349,7 @@ export const POST = withBodyApiHandler<ImportPlaylistRequestBody>(
     logger.info(200);
     return new Response(
       JSON.stringify({
-        platform: parsed.platform,
+        platform,
         playlistName,
         tracks: importedTracks,
         summary: {

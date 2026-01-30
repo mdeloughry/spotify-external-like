@@ -9,7 +9,7 @@ import SidebarRecommendations from './SidebarRecommendations';
 import type { SpotifyTrack } from '../lib/spotify';
 import type { TrackWithLiked } from '../lib/api-client';
 import { parseTrackUrl } from '../lib/url-parser';
-import { parsePlaylistUrl } from '../lib/playlist-parser';
+import { parsePlaylistUrl, isTextTrackList } from '../lib/playlist-parser';
 import { useSearchHistory, useAudioPlayer, useKeyboardShortcuts, shortcutPresets } from '../hooks';
 import { UI } from '../lib/constants';
 
@@ -24,6 +24,7 @@ const PLATFORM_NAMES: Record<string, string> = {
   'amazon-music': 'Amazon Music',
   'mixcloud': 'Mixcloud',
   'beatport': 'Beatport',
+  'text': 'Text Import',
 };
 
 /** Props for the main search application component */
@@ -149,6 +150,9 @@ export default function SearchApp({ initialQuery }: SearchAppProps) {
     setSearchSuggestions([]);
     setPlaylistImport(null);
 
+    // Check if query is a text track list (multi-line or "Artist - Title" format)
+    const isTextList = isTextTrackList(query);
+
     // Check if query is a playlist URL first
     const playlistParsed = parsePlaylistUrl(query);
 
@@ -158,7 +162,7 @@ export default function SearchApp({ initialQuery }: SearchAppProps) {
     try {
       let data;
 
-      if (playlistParsed) {
+      if (isTextList || playlistParsed) {
         // Handle playlist import
         const response = await fetch('/api/import-playlist', {
           method: 'POST',

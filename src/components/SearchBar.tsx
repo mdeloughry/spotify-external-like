@@ -1,4 +1,8 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useLayoutEffect } from 'react';
+import { captureError } from '../lib/error-tracking';
+
+// Isomorphic layout effect - useLayoutEffect on client, useEffect on server
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 /** Props for the search bar component */
 interface SearchBarProps {
@@ -78,8 +82,8 @@ export default function SearchBar({ onSearch, isLoading, inputRef, onFocus, onBl
     setSpeechSupported(!!SpeechRecognition);
   }, []);
 
-  // Update query when initialValue changes (e.g., from URL params)
-  useEffect(() => {
+  // Sync with initialValue prop (handles Astro hydration and prop changes)
+  useIsomorphicLayoutEffect(() => {
     if (initialValue) {
       setQuery(initialValue);
     }
@@ -206,7 +210,13 @@ export default function SearchBar({ onSearch, isLoading, inputRef, onFocus, onBl
     };
 
     recognition.onerror = (event: { error: string }): void => {
-      console.error('Speech recognition error:', event.error);
+      // Track non-user errors with PostHog
+      if (event.error !== 'aborted' && event.error !== 'no-speech') {
+        captureError(new Error(`Speech recognition error: ${event.error}`), {
+          action: 'voice_search',
+          errorType: event.error,
+        });
+      }
 
       // Provide user-friendly error messages
       let errorMessage = 'Voice search failed';
@@ -247,7 +257,9 @@ export default function SearchBar({ onSearch, isLoading, inputRef, onFocus, onBl
     try {
       recognition.start();
     } catch (err) {
-      console.error('Failed to start speech recognition:', err);
+      captureError(err instanceof Error ? err : new Error(String(err)), {
+        action: 'voice_search_start',
+      });
       setSpeechError('Failed to start voice search');
       setTimeout(() => setSpeechError(null), 3000);
     }
@@ -290,7 +302,7 @@ export default function SearchBar({ onSearch, isLoading, inputRef, onFocus, onBl
             <textarea
               id="search-input"
               ref={textareaRef}
-              value={query}
+              value={query || initialValue || ''}
               onChange={handleChange}
               onFocus={onFocus}
               onBlur={onBlur}
@@ -337,7 +349,7 @@ export default function SearchBar({ onSearch, isLoading, inputRef, onFocus, onBl
               id="search-input"
               ref={ref as React.RefObject<HTMLInputElement>}
               type="text"
-              value={query}
+              value={query || initialValue || ''}
               onChange={handleChange}
               onPaste={handlePaste}
               onFocus={onFocus}

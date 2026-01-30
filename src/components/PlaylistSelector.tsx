@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import type { SpotifyPlaylist, SpotifyTrack } from '../lib/spotify';
+import { captureError } from '../lib/error-tracking';
 
 /** Props for the playlist selector modal */
 interface PlaylistSelectorProps {
@@ -104,7 +105,12 @@ export default function PlaylistSelector({ track, onClose, onAdd }: PlaylistSele
           }
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load playlists');
+        const error = err instanceof Error ? err : new Error(String(err));
+        captureError(error, {
+          action: 'fetch_playlists',
+          trackId: track.id,
+        });
+        setError(error.message || 'Failed to load playlists');
       } finally {
         setIsLoading(false);
       }
@@ -119,7 +125,12 @@ export default function PlaylistSelector({ track, onClose, onAdd }: PlaylistSele
       await onAdd(playlistId, track.uri);
       setAddedTo((prev) => new Set([...prev, playlistId]));
     } catch (err) {
-      console.error('Failed to add to playlist:', err);
+      captureError(err instanceof Error ? err : new Error(String(err)), {
+        action: 'add_to_playlist',
+        playlistId,
+        trackId: track.id,
+        trackName: track.name,
+      });
     } finally {
       setAddingTo(null);
     }

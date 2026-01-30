@@ -15,6 +15,33 @@ function isImportableUrl(url) {
   return IMPORT_URL_PATTERNS.some(pattern => pattern.test(url));
 }
 
+/**
+ * Validate that a URL is safe and well-formed
+ * @param {string} url - URL to validate
+ * @returns {boolean} - True if URL is valid
+ */
+function isValidAppUrl(url) {
+  if (!url || typeof url !== 'string') return false;
+  try {
+    const parsed = new URL(url);
+    // Only allow http/https protocols
+    return ['http:', 'https:'].includes(parsed.protocol);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Sanitize user input for URL parameters
+ * @param {string} text - Text to sanitize
+ * @returns {string} - Sanitized text
+ */
+function sanitizeInput(text) {
+  if (!text || typeof text !== 'string') return '';
+  // Trim and limit length to prevent DoS
+  return text.trim().slice(0, 2000);
+}
+
 // Create context menus on install
 chrome.runtime.onInstalled.addListener(() => {
   // Search for selected text
@@ -41,12 +68,15 @@ chrome.runtime.onInstalled.addListener(() => {
 
 // Handle context menu clicks
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
-  const { appUrl } = await chrome.storage.sync.get({ appUrl: DEFAULT_APP_URL });
+  const result = await chrome.storage.sync.get({ appUrl: DEFAULT_APP_URL });
+  const appUrl = isValidAppUrl(result.appUrl) ? result.appUrl : DEFAULT_APP_URL;
 
   if (info.menuItemId === 'spillover-search' && info.selectionText) {
-    // Open app with search query
-    const searchUrl = `${appUrl}?q=${encodeURIComponent(info.selectionText.trim())}`;
-    chrome.tabs.create({ url: searchUrl });
+    const sanitized = sanitizeInput(info.selectionText);
+    if (sanitized) {
+      const searchUrl = `${appUrl}?q=${encodeURIComponent(sanitized)}`;
+      chrome.tabs.create({ url: searchUrl });
+    }
   }
 
   if (info.menuItemId === 'spillover-import' && info.linkUrl) {
@@ -55,8 +85,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
       const importUrl = `${appUrl}?url=${encodeURIComponent(info.linkUrl)}`;
       chrome.tabs.create({ url: importUrl });
     } else {
-      // Try to extract text from the link and search instead
-      // Fall back to using the URL itself as search
+      // Fall back to using the URL as search
       const searchUrl = `${appUrl}?q=${encodeURIComponent(info.linkUrl)}`;
       chrome.tabs.create({ url: searchUrl });
     }
@@ -64,25 +93,57 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
 
   if (info.menuItemId === 'spillover-page' && tab) {
     // Use page title for search, or URL if title is empty
-    const searchQuery = tab.title || tab.url;
-    const searchUrl = `${appUrl}?q=${encodeURIComponent(searchQuery)}`;
-    chrome.tabs.create({ url: searchUrl });
+    const searchQuery = sanitizeInput(tab.title || tab.url || '');
+    if (searchQuery) {
+      const searchUrl = `${appUrl}?q=${encodeURIComponent(searchQuery)}`;
+      chrome.tabs.create({ url: searchUrl });
+    }
   }
 });
 
 // Listen for messages from popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  // Validate sender is from our extension
+  if (!sender.id || sender.id !== chrome.runtime.id) {
+    sendResponse({ error: 'Invalid sender' });
+    return true;
+  }
+
+  // Validate request structure
+  if (!request || typeof request !== 'object' || typeof request.action !== 'string') {
+    sendResponse({ error: 'Invalid request' });
+    return true;
+  }
+
   if (request.action === 'getAppUrl') {
     chrome.storage.sync.get({ appUrl: DEFAULT_APP_URL }, (result) => {
-      sendResponse({ appUrl: result.appUrl });
+      if (chrome.runtime.lastError) {
+        sendResponse({ error: 'Storage error', appUrl: DEFAULT_APP_URL });
+      } else {
+        sendResponse({ appUrl: result.appUrl || DEFAULT_APP_URL });
+      }
     });
     return true; // Keep channel open for async response
   }
 
   if (request.action === 'setAppUrl') {
-    chrome.storage.sync.set({ appUrl: request.appUrl }, () => {
-      sendResponse({ success: true });
+    const newUrl = request.appUrl;
+    // Validate the URL before saving
+    if (!isValidAppUrl(newUrl)) {
+      sendResponse({ success: false, error: 'Invalid URL format' });
+      return true;
+    }
+    chrome.storage.sync.set({ appUrl: newUrl }, () => {
+      if (chrome.runtime.lastError) {
+        sendResponse({ success: false, error: 'Storage error' });
+      } else {
+        sendResponse({ success: true });
+      }
     });
     return true;
   }
+
+  // Unknown action
+  sendResponse({ error: 'Unknown action' });
+  return true;
 });

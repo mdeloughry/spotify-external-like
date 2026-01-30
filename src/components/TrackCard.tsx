@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { SpotifyTrack } from '../lib/spotify';
 import { formatDuration, getAlbumImageUrl, formatArtists } from '../lib/spotify';
 import { copyTrackUrl } from '../lib/clipboard';
+import { captureError } from '../lib/error-tracking';
 import TruncatedText from './TruncatedText';
 
 /** Props for the track card component */
@@ -41,7 +42,11 @@ export default function TrackCard({
   const handleShareClick = async (): Promise<void> => {
     const result = await copyTrackUrl(track.external_urls?.spotify);
     if (!result.success) {
-      console.error('Failed to copy track URL to clipboard:', result.error);
+      captureError(result.error || 'Failed to copy track URL to clipboard', {
+        action: 'copy_track_url',
+        trackId: track.id,
+        trackName: track.name,
+      });
     }
   };
 
@@ -51,7 +56,12 @@ export default function TrackCard({
       await onLikeToggle(track.id, !isLiked);
       setIsLiked(!isLiked);
     } catch (err) {
-      console.error('Failed to toggle like:', err);
+      captureError(err instanceof Error ? err : new Error(String(err)), {
+        action: 'like_toggle',
+        trackId: track.id,
+        trackName: track.name,
+        attemptedState: !isLiked,
+      });
     } finally {
       setIsLikeLoading(false);
     }
@@ -69,9 +79,13 @@ export default function TrackCard({
       // Reset success indicator after 2 seconds
       setTimeout(() => setQueueSuccess(false), 2000);
     } catch (err) {
-      console.error('Failed to add to queue:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Failed to add to queue';
-      setQueueError(errorMessage);
+      const error = err instanceof Error ? err : new Error(String(err));
+      captureError(error, {
+        action: 'add_to_queue',
+        trackId: track.id,
+        trackName: track.name,
+      });
+      setQueueError(error.message || 'Failed to add to queue');
       // Clear error after 3 seconds
       setTimeout(() => setQueueError(null), 3000);
     } finally {
@@ -86,7 +100,11 @@ export default function TrackCard({
     try {
       await onPlayNow(track);
     } catch (err) {
-      console.error('Failed to play track:', err);
+      captureError(err instanceof Error ? err : new Error(String(err)), {
+        action: 'play_now',
+        trackId: track.id,
+        trackName: track.name,
+      });
     } finally {
       setIsPlayLoading(false);
     }

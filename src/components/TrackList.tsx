@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { SpotifyTrack } from '../lib/spotify';
+import { captureError } from '../lib/error-tracking';
 import TrackCard from './TrackCard';
 
 /** Props for the track list component */
@@ -45,7 +46,10 @@ export default function TrackList({
       setLikeAllSuccess(true);
       setTimeout(() => setLikeAllSuccess(false), 2000);
     } catch (err) {
-      console.error('Failed to like all tracks:', err);
+      captureError(err instanceof Error ? err : new Error(String(err)), {
+        action: 'like_all_tracks',
+        trackCount: unlikedTracks.length,
+      });
     } finally {
       setIsLikingAll(false);
     }

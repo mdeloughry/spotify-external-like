@@ -44,7 +44,7 @@ import AnalyticsOptOut from "../components/AnalyticsOptOut";
             <li class="flex items-start gap-2">
               <span class="text-spotify-green mt-1">•</span>
               <span
-                >Optional anonymous analytics only - no personal data, no IP
+                >Optional anonymous analytics and error tracking - no personal data, no IP
                 addresses</span
               >
             </li>
@@ -360,7 +360,7 @@ import AnalyticsOptOut from "../components/AnalyticsOptOut";
         <!-- Analytics -->
         <section>
           <h3 class="text-white text-xl font-semibold mb-4">
-            Anonymous Analytics
+            Anonymous Analytics & Error Tracking
           </h3>
           <div
             class="bg-spotify-gray/10 rounded-lg p-4 border border-spotify-gray/20 mb-4"
@@ -382,8 +382,8 @@ import AnalyticsOptOut from "../components/AnalyticsOptOut";
               <span class="text-white font-medium">PostHog (Optional)</span>
             </div>
             <p class="text-sm mb-3">
-              We may use PostHog for basic, anonymous analytics to understand
-              how the app is used. This helps us improve features and fix
+              We may use PostHog for basic, anonymous analytics and error tracking to understand
+              how the app is used and to fix bugs quickly. This helps us improve features and fix
               issues. Here's what you should know:
             </p>
             <ul class="space-y-2 text-sm">
@@ -415,10 +415,18 @@ import AnalyticsOptOut from "../components/AnalyticsOptOut";
                   aggregate usage data, no personal profiles</span
                 >
               </li>
+              <li class="flex items-start gap-2">
+                <span class="text-spotify-green mt-0.5">•</span>
+                <span
+                  ><strong class="text-white">Error tracking</strong> - When errors occur,
+                  we capture the error type and action context (e.g., "search failed") to help
+                  diagnose issues. No personal data, search queries, or track information is included.</span
+                >
+              </li>
             </ul>
           </div>
           <p class="text-sm mb-4">
-            Analytics are optional and only enabled if the site operator
+            Analytics and error tracking are optional and only enabled if the site operator
             configures it. Self-hosted instances can run without any analytics.
           </p>
           <div class="mt-4">

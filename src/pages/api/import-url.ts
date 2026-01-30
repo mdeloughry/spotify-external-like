@@ -1,6 +1,6 @@
 import { searchTracks, checkSavedTracks, getTrackById } from '../../lib/spotify';
 import { parseTrackUrl } from '../../lib/url-parser';
-import { withBodyApiHandler, validateUrl, errorResponse } from '../../lib/api-utils';
+import { withBodyApiHandler, validateExternalUrl, errorResponse } from '../../lib/api-utils';
 import { RATE_LIMIT, API_PATHS, TIMEOUTS } from '../../lib/constants';
 
 interface ImportUrlRequestBody {
@@ -86,8 +86,8 @@ export const POST = withBodyApiHandler<ImportUrlRequestBody>(
   async ({ token, headers, logger, body }) => {
     const { url } = body;
 
-    // Validation
-    const urlValidation = validateUrl(url);
+    // Validation with SSRF protection
+    const urlValidation = validateExternalUrl(url);
     if (!urlValidation.valid) {
       logger.info(400);
       return errorResponse(urlValidation.error!, 400);

@@ -42,11 +42,11 @@ export default function AnalyticsOptOut() {
     <div className="bg-spotify-gray/10 rounded-lg p-4 border border-spotify-gray/20">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <p className="text-white font-medium text-sm">Anonymous Analytics</p>
+          <p className="text-white font-medium text-sm">Analytics & Error Tracking</p>
           <p className="text-spotify-lightgray text-xs mt-1">
             {optedOut
-              ? "Analytics are disabled. No data is being collected."
-              : "Help improve Spillover with anonymous usage data."}
+              ? "Analytics and error tracking are disabled. No data is being collected."
+              : "Help improve Spillover with anonymous usage data and error reports."}
           </p>
         </div>
         <button
@@ -56,7 +56,7 @@ export default function AnalyticsOptOut() {
           }`}
           role="switch"
           aria-checked={!optedOut}
-          aria-label="Toggle analytics"
+          aria-label="Toggle analytics and error tracking"
         >
           <span
             className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${

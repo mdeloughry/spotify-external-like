@@ -126,7 +126,7 @@ export const COOKIES = {
   AUTH_STATE_MAX_AGE: 10 * 60, // 10 minutes
 
   /** Refresh token expiry in seconds */
-  REFRESH_TOKEN_MAX_AGE: 60 * 60 * 24 * 30, // 30 days
+  REFRESH_TOKEN_MAX_AGE: 60 * 60 * 24 * 14, // 14 days
 } as const;
 
 // =============================================================================

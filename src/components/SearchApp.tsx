@@ -10,6 +10,7 @@ import type { TrackWithLiked } from '../lib/api-client';
 import { parseTrackUrl } from '../lib/url-parser';
 import { parsePlaylistUrl, isTextTrackList } from '../lib/playlist-parser';
 import { useSearchHistory, useKeyboardShortcuts, shortcutPresets } from '../hooks';
+import { captureError } from '../lib/error-tracking';
 import { UI } from '../lib/constants';
 
 const PLATFORM_NAMES: Record<string, string> = {
@@ -229,10 +230,16 @@ export default function SearchApp({ initialQuery }: SearchAppProps) {
         }
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Search failed';
-      setError(errorMessage);
+      const error = err instanceof Error ? err : new Error(String(err));
+      captureError(error, {
+        action: 'search',
+        query: query.substring(0, 100), // Truncate for privacy
+        isPlaylistImport: isTextList || !!playlistParsed,
+        isUrlImport: !!urlParsed,
+      });
+      setError(error.message || 'Search failed');
       setTracks([]);
-      announce(`Error: ${errorMessage}`);
+      announce(`Error: ${error.message || 'Search failed'}`);
     } finally {
       setIsLoading(false);
     }
@@ -256,7 +263,11 @@ export default function SearchApp({ initialQuery }: SearchAppProps) {
           const data = await response.json();
           setHasActiveSession(data.hasActiveSession);
         }
-      } catch {
+      } catch (err) {
+        // Only track non-network errors (network errors are expected when offline)
+        if (err instanceof Error && !err.message.includes('fetch')) {
+          captureError(err, { action: 'check_playback_state' });
+        }
         setHasActiveSession(false);
       }
     };

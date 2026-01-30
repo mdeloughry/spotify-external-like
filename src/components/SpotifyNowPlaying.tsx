@@ -3,6 +3,7 @@ import type { SpotifyTrack } from '../lib/spotify';
 import type { TrackWithLiked } from '../lib/api-client';
 import { formatDuration, getAlbumImageUrl, formatArtists } from '../lib/spotify';
 import { copyTrackUrl } from '../lib/clipboard';
+import { captureError } from '../lib/error-tracking';
 import { POLLING, UI } from '../lib/constants';
 import PsychedelicVisualizer from './PsychedelicVisualizer';
 
@@ -37,7 +38,11 @@ export default function SpotifyNowPlaying({ onTrackSelect, onTrackChange }: Spot
   const handleShare = async (): Promise<void> => {
     const result = await copyTrackUrl(nowPlaying?.track?.external_urls?.spotify);
     if (!result.success) {
-      console.error('Failed to copy track URL to clipboard:', result.error);
+      captureError(result.error || 'Failed to copy track URL to clipboard', {
+        action: 'copy_track_url',
+        trackId: nowPlaying?.track?.id,
+        trackName: nowPlaying?.track?.name,
+      });
     }
   };
 
@@ -76,7 +81,10 @@ export default function SpotifyNowPlaying({ onTrackSelect, onTrackChange }: Spot
         onTrackChange?.(data.track || null);
       }
     } catch (err) {
-      console.error('Failed to fetch now playing:', err);
+      // Only track non-network errors (network errors are expected when offline)
+      if (err instanceof Error && !err.message.includes('fetch')) {
+        captureError(err, { action: 'fetch_now_playing' });
+      }
     }
   }, [onTrackChange]);
 
@@ -110,13 +118,21 @@ export default function SpotifyNowPlaying({ onTrackSelect, onTrackChange }: Spot
 
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
-        console.error('Failed to toggle like:', data.error || response.statusText);
+        captureError(new Error(data.error || `Like toggle failed: ${response.statusText}`), {
+          action: 'like_toggle_now_playing',
+          trackId: nowPlaying.track.id,
+          trackName: nowPlaying.track.name,
+        });
         return;
       }
 
       setIsLiked(!isLiked);
     } catch (err) {
-      console.error('Failed to toggle like:', err);
+      captureError(err instanceof Error ? err : new Error(String(err)), {
+        action: 'like_toggle_now_playing',
+        trackId: nowPlaying.track.id,
+        trackName: nowPlaying.track.name,
+      });
     }
   };
 

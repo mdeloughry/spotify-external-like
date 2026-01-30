@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { SpotifyTrack } from '../lib/spotify';
 import type { TrackWithLiked } from '../lib/api-client';
 import { formatDuration, getAlbumImageUrl } from '../lib/spotify';
+import { captureError } from '../lib/error-tracking';
 import { UI } from '../lib/constants';
 
 /** Props for the suggestions/recommendations component */
@@ -46,7 +47,12 @@ export default function Suggestions({
 
         setTracks(data.tracks);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load suggestions');
+        const error = err instanceof Error ? err : new Error(String(err));
+        captureError(error, {
+          action: 'fetch_suggestions',
+          seedTrackIds,
+        });
+        setError(error.message || 'Failed to load suggestions');
       } finally {
         setIsLoading(false);
       }
@@ -62,7 +68,11 @@ export default function Suggestions({
         prev.map((t) => (t.id === track.id ? { ...t, isLiked: !t.isLiked } : t))
       );
     } catch (err) {
-      console.error('Failed to toggle like:', err);
+      captureError(err instanceof Error ? err : new Error(String(err)), {
+        action: 'like_toggle_suggestion',
+        trackId: track.id,
+        trackName: track.name,
+      });
     }
   };
 

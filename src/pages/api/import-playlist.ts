@@ -1,6 +1,6 @@
 import { searchTracks, checkSavedTracks, getPlaylistTracks as getSpotifyPlaylistTracks } from '../../lib/spotify';
 import { parsePlaylistUrl, parseTextTracks, isTextTrackList } from '../../lib/playlist-parser';
-import { withBodyApiHandler, validateUrl, errorResponse } from '../../lib/api-utils';
+import { withBodyApiHandler, validateExternalUrl, errorResponse } from '../../lib/api-utils';
 import { RATE_LIMIT, TIMEOUTS } from '../../lib/constants';
 import type { SpotifyTrack } from '../../lib/spotify';
 
@@ -113,7 +113,6 @@ async function getPagePlaylistTracks(url: string, platform: string): Promise<Pla
   try {
     const response = await fetchWithTimeout(url, TIMEOUTS.EXTERNAL_API_MS);
     if (!response.ok) {
-      console.error(`Failed to fetch ${platform} playlist: ${response.status}`);
       return tracks;
     }
 
@@ -295,8 +294,8 @@ async function getPagePlaylistTracks(url: string, platform: string): Promise<Pla
         if (tracks.length > 0) break;
       }
     }
-  } catch (err) {
-    console.error(`Error scraping ${platform} playlist:`, err);
+  } catch {
+    // Scraping failed - return empty or partial results
   }
 
   return tracks;
@@ -394,8 +393,8 @@ export const POST = withBodyApiHandler<ImportPlaylistRequestBody>(
       playlistName = 'Text Import';
       platform = 'text';
     } else {
-      // Try to parse as URL
-      const urlValidation = validateUrl(input);
+      // Try to parse as URL with SSRF protection
+      const urlValidation = validateExternalUrl(input);
       if (!urlValidation.valid) {
         logger.info(400);
         return errorResponse(urlValidation.error!, 400);

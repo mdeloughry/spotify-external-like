@@ -73,6 +73,65 @@ export function validateTrackUri(uri: string | null | undefined): ValidationResu
 }
 
 /**
+ * Allowed domains for external URL fetching (SSRF protection)
+ */
+const ALLOWED_DOMAINS = [
+  // Spotify
+  'open.spotify.com',
+  'spotify.com',
+  // YouTube
+  'youtube.com',
+  'www.youtube.com',
+  'youtu.be',
+  'music.youtube.com',
+  // Apple Music
+  'music.apple.com',
+  // SoundCloud
+  'soundcloud.com',
+  'www.soundcloud.com',
+  // Deezer
+  'deezer.com',
+  'www.deezer.com',
+  // Tidal
+  'tidal.com',
+  'www.tidal.com',
+  'listen.tidal.com',
+  // Bandcamp
+  'bandcamp.com',
+  // Amazon Music
+  'music.amazon.com',
+  'amazon.com',
+  // Mixcloud
+  'mixcloud.com',
+  'www.mixcloud.com',
+  // Beatport
+  'beatport.com',
+  'www.beatport.com',
+];
+
+/**
+ * Private/internal IP ranges that should be blocked (SSRF protection)
+ */
+const BLOCKED_IP_PATTERNS = [
+  /^127\./,                    // Localhost
+  /^10\./,                     // Private class A
+  /^172\.(1[6-9]|2[0-9]|3[0-1])\./, // Private class B
+  /^192\.168\./,               // Private class C
+  /^169\.254\./,               // Link-local
+  /^0\./,                      // Current network
+  /^::1$/,                     // IPv6 localhost
+  /^fc00:/i,                   // IPv6 private
+  /^fe80:/i,                   // IPv6 link-local
+];
+
+/**
+ * Check if a hostname is a blocked IP address
+ */
+function isBlockedIp(hostname: string): boolean {
+  return BLOCKED_IP_PATTERNS.some(pattern => pattern.test(hostname));
+}
+
+/**
  * Validate a URL
  * @param url - The URL to validate
  * @returns Validation result
@@ -86,6 +145,50 @@ export function validateUrl(url: string | null | undefined): ValidationResult {
     if (!['http:', 'https:'].includes(parsed.protocol)) {
       return { valid: false, error: 'Invalid URL protocol' };
     }
+    return { valid: true };
+  } catch {
+    return { valid: false, error: 'Invalid URL format' };
+  }
+}
+
+/**
+ * Validate a URL for external fetching with SSRF protection
+ * @param url - The URL to validate
+ * @returns Validation result
+ */
+export function validateExternalUrl(url: string | null | undefined): ValidationResult {
+  if (!url) {
+    return { valid: false, error: 'Missing URL' };
+  }
+
+  try {
+    const parsed = new URL(url);
+
+    // Only allow http/https
+    if (!['http:', 'https:'].includes(parsed.protocol)) {
+      return { valid: false, error: 'Invalid URL protocol' };
+    }
+
+    // Block private/internal IPs
+    if (isBlockedIp(parsed.hostname)) {
+      return { valid: false, error: 'URL points to blocked address' };
+    }
+
+    // Block localhost variations
+    if (parsed.hostname === 'localhost' || parsed.hostname.endsWith('.localhost')) {
+      return { valid: false, error: 'URL points to blocked address' };
+    }
+
+    // Check against allowed domains
+    const hostname = parsed.hostname.toLowerCase();
+    const isAllowed = ALLOWED_DOMAINS.some(domain =>
+      hostname === domain || hostname.endsWith('.' + domain)
+    );
+
+    if (!isAllowed) {
+      return { valid: false, error: 'URL domain not supported for import' };
+    }
+
     return { valid: true };
   } catch {
     return { valid: false, error: 'Invalid URL format' };

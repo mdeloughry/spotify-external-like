@@ -49,6 +49,7 @@ export {
   validatePlaylistId,
   validateTrackUri,
   validateUrl,
+  validateExternalUrl,
   validateRequiredString,
   type ValidationResult,
 } from './api/validators';

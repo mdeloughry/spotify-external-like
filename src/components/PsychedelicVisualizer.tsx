@@ -60,8 +60,8 @@ export default function PsychedelicVisualizer({ audioElement, onClose }: Psyched
         analyser.connect(audioContext.destination);
 
         dataArrayRef.current = new Uint8Array(analyser.frequencyBinCount);
-      } catch (e) {
-        console.log('Audio context already exists or failed to create');
+      } catch {
+        // Audio context may already exist or fail to create - continue without audio visualization
       }
     }
 

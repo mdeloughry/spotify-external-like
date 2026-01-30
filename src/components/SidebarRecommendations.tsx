@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import type { SpotifyTrack } from '../lib/spotify';
 import type { TrackWithLiked } from '../lib/api-client';
 import { getAlbumImageUrl } from '../lib/spotify';
+import { captureError } from '../lib/error-tracking';
 import { UI } from '../lib/constants';
 
 /** Props for the sidebar recommendations component */
@@ -30,7 +31,10 @@ export default function SidebarRecommendations({ currentTrack, onTrackSelect }: 
         setRecommendations(data.tracks || []);
       }
     } catch (err) {
-      console.error('Failed to fetch recommendations:', err);
+      captureError(err instanceof Error ? err : new Error(String(err)), {
+        action: 'fetch_recommendations',
+        seedTrackId: trackId,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -60,7 +64,11 @@ export default function SidebarRecommendations({ currentTrack, onTrackSelect }: 
         prev.map((t) => (t.id === track.id ? { ...t, isLiked: !t.isLiked } : t))
       );
     } catch (err) {
-      console.error('Failed to toggle like:', err);
+      captureError(err instanceof Error ? err : new Error(String(err)), {
+        action: 'like_toggle_recommendation',
+        trackId: track.id,
+        trackName: track.name,
+      });
     }
   };
 

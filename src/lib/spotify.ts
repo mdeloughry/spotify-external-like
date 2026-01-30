@@ -75,13 +75,24 @@ async function spotifyFetch<T>(
     },
   });
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.error?.message || `Spotify API error: ${response.status}`);
-  }
-
   // Some endpoints return 200/204 with no content
   const text = await response.text();
+
+  if (!response.ok) {
+    // Try to parse error as JSON, but handle non-JSON responses
+    let errorMessage = `Spotify API error: ${response.status}`;
+    if (text) {
+      try {
+        const error = JSON.parse(text);
+        errorMessage = error.error?.message || errorMessage;
+      } catch {
+        // Response is not JSON, use status text
+        errorMessage = `Spotify API error: ${response.status} ${response.statusText}`;
+      }
+    }
+    throw new Error(errorMessage);
+  }
+
   if (!text) {
     return {} as T;
   }

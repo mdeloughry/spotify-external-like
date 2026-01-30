@@ -18,10 +18,17 @@ export default function PlaylistSelector({ track, onClose, onAdd }: PlaylistSele
   const [addingTo, setAddingTo] = useState<string | null>(null);
   const [addedTo, setAddedTo] = useState<Set<string>>(new Set());
   const [duplicates, setDuplicates] = useState<Record<string, boolean>>({});
+  const [searchQuery, setSearchQuery] = useState('');
 
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const previouslyFocusedElement = useRef<HTMLElement | null>(null);
+
+  // Filter playlists based on search query
+  const filteredPlaylists = playlists.filter(playlist =>
+    playlist.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   // Handle escape key and focus trap
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -144,26 +151,68 @@ export default function PlaylistSelector({ track, onClose, onAdd }: PlaylistSele
         className="bg-spotify-black border border-spotify-gray/30 rounded-lg w-full max-w-md max-h-[80vh] flex flex-col"
       >
         {/* Header */}
-        <div className="p-4 border-b border-spotify-gray/30 flex items-center justify-between">
-          <div>
-            <h2 id="playlist-dialog-title" className="font-bold text-white">Add to playlist</h2>
-            <p id="playlist-dialog-description" className="text-sm text-spotify-lightgray truncate">{track.name}</p>
+        <div className="p-4 border-b border-spotify-gray/30">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <h2 id="playlist-dialog-title" className="font-bold text-white">Add to playlist</h2>
+              <p id="playlist-dialog-description" className="text-sm text-spotify-lightgray truncate">{track.name}</p>
+            </div>
+            <button
+              ref={closeButtonRef}
+              onClick={onClose}
+              className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-spotify-lightgray hover:text-white transition-colors"
+              aria-label="Close dialog"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
           </div>
-          <button
-            ref={closeButtonRef}
-            onClick={onClose}
-            className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-spotify-lightgray hover:text-white transition-colors"
-            aria-label="Close dialog"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
+          {/* Search Input */}
+          {playlists.length > 5 && (
+            <div className="relative">
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search playlists..."
+                className="w-full px-3 py-2 pl-9 text-sm bg-spotify-gray/30 border border-spotify-gray/50 rounded-lg text-white placeholder-spotify-lightgray/60 focus:outline-none focus:border-spotify-green/50 focus:ring-1 focus:ring-spotify-green/20"
+                aria-label="Search playlists"
               />
-            </svg>
-          </button>
+              <svg
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-spotify-lightgray/60"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-spotify-lightgray/60 hover:text-white"
+                  aria-label="Clear search"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Playlist List */}
@@ -181,9 +230,19 @@ export default function PlaylistSelector({ track, onClose, onAdd }: PlaylistSele
             <div className="text-center py-12 text-spotify-lightgray" role="status">
               <p>No playlists found</p>
             </div>
+          ) : filteredPlaylists.length === 0 ? (
+            <div className="text-center py-8 text-spotify-lightgray" role="status">
+              <p className="text-sm">No playlists match "{searchQuery}"</p>
+              <button
+                onClick={() => setSearchQuery('')}
+                className="mt-2 text-xs text-spotify-green hover:underline"
+              >
+                Clear search
+              </button>
+            </div>
           ) : (
             <ul className="p-2" role="list" aria-label="Your playlists">
-              {playlists.map((playlist) => {
+              {filteredPlaylists.map((playlist) => {
                 const isAdded = addedTo.has(playlist.id);
                 const isAdding = addingTo === playlist.id;
                 const isDuplicate = duplicates[playlist.id] === true;

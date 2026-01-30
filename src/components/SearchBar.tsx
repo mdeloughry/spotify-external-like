@@ -14,13 +14,66 @@ interface SearchBarProps {
   onBlur?: () => void;
 }
 
+/** Extend Window interface for Web Speech API */
+interface SpeechRecognitionEvent {
+  results: SpeechRecognitionResultList;
+  resultIndex: number;
+}
+
+interface SpeechRecognitionResultList {
+  length: number;
+  item(index: number): SpeechRecognitionResult;
+  [index: number]: SpeechRecognitionResult;
+}
+
+interface SpeechRecognitionResult {
+  length: number;
+  item(index: number): SpeechRecognitionAlternative;
+  [index: number]: SpeechRecognitionAlternative;
+  isFinal: boolean;
+}
+
+interface SpeechRecognitionAlternative {
+  transcript: string;
+  confidence: number;
+}
+
+interface SpeechRecognition extends EventTarget {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  start(): void;
+  stop(): void;
+  abort(): void;
+  onresult: ((event: SpeechRecognitionEvent) => void) | null;
+  onerror: ((event: { error: string }) => void) | null;
+  onend: (() => void) | null;
+  onstart: (() => void) | null;
+}
+
+declare global {
+  interface Window {
+    SpeechRecognition?: new () => SpeechRecognition;
+    webkitSpeechRecognition?: new () => SpeechRecognition;
+  }
+}
+
 export default function SearchBar({ onSearch, isLoading, inputRef, onFocus, onBlur }: SearchBarProps) {
   const [query, setQuery] = useState('');
   const [isMultiline, setIsMultiline] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [speechSupported, setSpeechSupported] = useState(false);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const localRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
   const ref = inputRef || localRef;
+
+  // Check for speech recognition support on mount
+  useEffect(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    setSpeechSupported(!!SpeechRecognition);
+  }, []);
 
   const debouncedSearch = useCallback(
     (value: string) => {
@@ -87,6 +140,83 @@ export default function SearchBar({ onSearch, isLoading, inputRef, onFocus, onBl
     setIsMultiline(false);
     ref.current?.focus();
   };
+
+  const startVoiceSearch = (): void => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) return;
+
+    // Stop any existing recognition
+    if (recognitionRef.current) {
+      recognitionRef.current.abort();
+    }
+
+    const recognition = new SpeechRecognition();
+    recognitionRef.current = recognition;
+
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+
+    recognition.onstart = (): void => {
+      setIsListening(true);
+    };
+
+    recognition.onresult = (event: SpeechRecognitionEvent): void => {
+      const results = event.results;
+      let transcript = '';
+
+      for (let i = event.resultIndex; i < results.length; i++) {
+        transcript += results[i][0].transcript;
+      }
+
+      setQuery(transcript);
+
+      // Auto-submit when we get a final result
+      if (results[results.length - 1].isFinal) {
+        if (transcript.trim()) {
+          if (debounceRef.current) {
+            clearTimeout(debounceRef.current);
+          }
+          onSearch(transcript.trim());
+        }
+      }
+    };
+
+    recognition.onerror = (event: { error: string }): void => {
+      console.error('Speech recognition error:', event.error);
+      setIsListening(false);
+    };
+
+    recognition.onend = (): void => {
+      setIsListening(false);
+      recognitionRef.current = null;
+    };
+
+    recognition.start();
+  };
+
+  const stopVoiceSearch = (): void => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+    }
+  };
+
+  const toggleVoiceSearch = (): void => {
+    if (isListening) {
+      stopVoiceSearch();
+    } else {
+      startVoiceSearch();
+    }
+  };
+
+  // Cleanup recognition on unmount
+  useEffect(() => {
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.abort();
+      }
+    };
+  }, []);
 
   const lineCount = query.split('\n').length;
 
@@ -155,7 +285,7 @@ export default function SearchBar({ onSearch, isLoading, inputRef, onFocus, onBl
               onFocus={onFocus}
               onBlur={onBlur}
               placeholder="Search for tracks, artists, or paste a URL..."
-              className="w-full px-4 py-3 pl-12 text-lg bg-spotify-gray/30 border border-spotify-gray/50 rounded-full text-white placeholder-spotify-lightgray focus:outline-none focus:border-spotify-green focus:ring-2 focus:ring-spotify-green/20 transition-all"
+              className={`w-full px-4 py-3 pl-12 ${speechSupported ? 'pr-12' : ''} text-lg bg-spotify-gray/30 border border-spotify-gray/50 rounded-full text-white placeholder-spotify-lightgray focus:outline-none focus:border-spotify-green focus:ring-2 focus:ring-spotify-green/20 transition-all ${isListening ? 'border-red-500 ring-2 ring-red-500/20' : ''}`}
               autoComplete="off"
               aria-autocomplete="list"
             />
@@ -173,11 +303,40 @@ export default function SearchBar({ onSearch, isLoading, inputRef, onFocus, onBl
                 d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
               />
             </svg>
+            {/* Voice Search Button */}
+            {speechSupported && (
+              <button
+                type="button"
+                onClick={toggleVoiceSearch}
+                className={`absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full transition-all ${
+                  isListening
+                    ? 'bg-red-500 text-white animate-pulse'
+                    : 'text-spotify-lightgray hover:text-white hover:bg-spotify-gray/50'
+                }`}
+                aria-label={isListening ? 'Stop voice search' : 'Start voice search'}
+                title={isListening ? 'Click to stop' : 'Voice search'}
+              >
+                {isListening ? (
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <rect x="6" y="6" width="12" height="12" rx="2" />
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
+                    />
+                  </svg>
+                )}
+              </button>
+            )}
           </>
         )}
 
-        {isLoading && !isMultiline && (
-          <div className="absolute right-4 top-1/2 -translate-y-1/2" role="status" aria-label="Searching">
+        {isLoading && !isMultiline && !isListening && (
+          <div className={`absolute top-1/2 -translate-y-1/2 ${speechSupported ? 'right-14' : 'right-4'}`} role="status" aria-label="Searching">
             <div className="w-5 h-5 border-2 border-spotify-green border-t-transparent rounded-full animate-spin" aria-hidden="true" />
             <span className="sr-only">Searching...</span>
           </div>

@@ -16,24 +16,22 @@ export default function CookieBanner() {
     }
   }, []);
 
-  const handleAccept = () => {
+  const handleAccept = (): void => {
     localStorage.setItem(CHOICE_KEY, 'true');
     localStorage.removeItem(OPTOUT_KEY);
     setVisible(false);
     // Reload to initialize analytics if they weren't loaded
-    if (!(window as any).posthog) {
+    if (!window.posthog) {
       window.location.reload();
     }
   };
 
-  const handleDecline = () => {
+  const handleDecline = (): void => {
     localStorage.setItem(CHOICE_KEY, 'true');
     localStorage.setItem(OPTOUT_KEY, 'true');
     setVisible(false);
     // If PostHog is loaded, opt out
-    if ((window as any).posthog) {
-      (window as any).posthog.opt_out_capturing();
-    }
+    window.posthog?.opt_out_capturing();
   };
 
   if (!visible) return null;

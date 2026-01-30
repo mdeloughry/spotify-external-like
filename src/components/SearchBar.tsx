@@ -1,10 +1,16 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 
+/** Props for the search bar component */
 interface SearchBarProps {
+  /** Callback triggered when search is submitted */
   onSearch: (query: string) => void;
+  /** Whether a search is in progress */
   isLoading?: boolean;
+  /** External ref for the input element */
   inputRef?: React.RefObject<HTMLInputElement | null>;
+  /** Callback when input gains focus */
   onFocus?: () => void;
+  /** Callback when input loses focus */
   onBlur?: () => void;
 }
 
@@ -37,20 +43,20 @@ export default function SearchBar({ onSearch, isLoading, inputRef, onFocus, onBl
     };
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const value = e.target.value;
     setQuery(value);
     debouncedSearch(value);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent): void => {
     e.preventDefault();
-    if (query.trim()) {
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current);
-      }
-      onSearch(query.trim());
+    if (!query.trim()) return;
+
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
     }
+    onSearch(query.trim());
   };
 
   return (

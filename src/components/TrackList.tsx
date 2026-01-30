@@ -1,15 +1,36 @@
 import type { SpotifyTrack } from '../lib/spotify';
 import TrackCard from './TrackCard';
 
+/** Props for the track list component */
 interface TrackListProps {
+  /** Array of tracks to display with liked status */
   tracks: (SpotifyTrack & { isLiked: boolean })[];
+  /** Callback to toggle like status */
   onLikeToggle: (trackId: string, isLiked: boolean) => Promise<void>;
+  /** Callback to open playlist selector */
   onAddToPlaylist: (track: SpotifyTrack) => void;
+  /** ID of currently playing track preview */
   playingTrackId: string | null;
+  /** Callback to toggle audio preview */
   onPlayToggle: (track: SpotifyTrack) => void;
+  /** Whether there's an active Spotify playback session */
+  hasActiveSession?: boolean;
+  /** Callback to add track to Spotify queue */
+  onAddToQueue?: (track: SpotifyTrack) => Promise<void>;
+  /** Callback to play track immediately on Spotify */
+  onPlayNow?: (track: SpotifyTrack) => Promise<void>;
 }
 
-export default function TrackList({ tracks, onLikeToggle, onAddToPlaylist, playingTrackId, onPlayToggle }: TrackListProps) {
+export default function TrackList({
+  tracks,
+  onLikeToggle,
+  onAddToPlaylist,
+  playingTrackId,
+  onPlayToggle,
+  hasActiveSession,
+  onAddToQueue,
+  onPlayNow,
+}: TrackListProps) {
   if (tracks.length === 0) {
     return (
       <div className="text-center py-12 text-spotify-lightgray" role="status">
@@ -63,6 +84,9 @@ export default function TrackList({ tracks, onLikeToggle, onAddToPlaylist, playi
                 onAddToPlaylist={onAddToPlaylist}
                 isPlaying={playingTrackId === track.id}
                 onPlayToggle={onPlayToggle}
+                hasActiveSession={hasActiveSession}
+                onAddToQueue={onAddToQueue}
+                onPlayNow={onPlayNow}
               />
             </li>
           ))}

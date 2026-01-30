@@ -11,7 +11,7 @@ export default function AnalyticsOptOut() {
     setOptedOut(stored === 'true');
   }, []);
 
-  const handleToggle = () => {
+  const handleToggle = (): void => {
     const newValue = !optedOut;
     setOptedOut(newValue);
 
@@ -21,9 +21,7 @@ export default function AnalyticsOptOut() {
     if (newValue) {
       localStorage.setItem(OPTOUT_KEY, 'true');
       // If PostHog is loaded, opt out
-      if (typeof window !== 'undefined' && (window as any).posthog) {
-        (window as any).posthog.opt_out_capturing();
-      }
+      window.posthog?.opt_out_capturing();
     } else {
       localStorage.removeItem(OPTOUT_KEY);
       // Reload to re-initialize analytics

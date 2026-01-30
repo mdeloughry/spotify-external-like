@@ -1,11 +1,17 @@
 import { useState, useEffect, useRef } from 'react';
 import type { SpotifyTrack } from '../lib/spotify';
 
+/** Props for the audio preview playback bar */
 interface NowPlayingBarProps {
+  /** Currently playing track, null if nothing playing */
   track: SpotifyTrack | null;
+  /** Whether audio is currently playing */
   isPlaying: boolean;
+  /** Callback to toggle play/pause */
   onPlayPause: () => void;
+  /** Callback to stop playback */
   onStop: () => void;
+  /** Reference to the audio element */
   audioRef: React.RefObject<HTMLAudioElement | null>;
 }
 
@@ -43,7 +49,7 @@ export default function NowPlayingBar({ track, isPlaying, onPlayPause, onStop, a
     }
   }, [volume, audioRef]);
 
-  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const newTime = parseFloat(e.target.value);
     setProgress(newTime);
     if (audioRef.current) {
@@ -51,16 +57,16 @@ export default function NowPlayingBar({ track, isPlaying, onPlayPause, onStop, a
     }
   };
 
-  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const newVolume = parseFloat(e.target.value);
     setVolume(newVolume);
   };
 
-  const handleShareTrack = async () => {
-    try {
-      const url = track?.external_urls?.spotify;
-      if (!url) return;
+  const handleShareTrack = async (): Promise<void> => {
+    const url = track?.external_urls?.spotify;
+    if (!url) return;
 
+    try {
       if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(url);
       } else {
@@ -78,7 +84,7 @@ export default function NowPlayingBar({ track, isPlaying, onPlayPause, onStop, a
     }
   };
 
-  const formatTime = (seconds: number) => {
+  const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, '0')}`;

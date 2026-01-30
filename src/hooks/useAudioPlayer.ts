@@ -76,17 +76,17 @@ export function useAudioPlayer(): UseAudioPlayerReturn {
     audio.volume = UI.DEFAULT_AUDIO_VOLUME;
     audioRef.current = audio;
 
-    const handleEnded = () => {
+    const handleEnded = (): void => {
       setPlayingTrackId(null);
       setPlayingTrack(null);
       setIsPlaying(false);
     };
 
-    const handlePause = () => {
+    const handlePause = (): void => {
       setIsPlaying(false);
     };
 
-    const handlePlay = () => {
+    const handlePlay = (): void => {
       setIsPlaying(true);
     };
 

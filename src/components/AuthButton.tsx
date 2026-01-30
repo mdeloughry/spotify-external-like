@@ -3,13 +3,19 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 const CHOICE_KEY = 'spillover_analytics_choice_made';
 const OPTOUT_KEY = 'spillover_analytics_optout';
 
+/** Spotify user profile data */
 interface SpotifyUser {
+  /** Spotify user ID */
   id: string;
+  /** User's display name */
   display_name: string | null;
+  /** User's profile images */
   images: { url: string; height: number; width: number }[];
 }
 
+/** Props for the authentication button component */
 interface AuthButtonProps {
+  /** Whether user is currently authenticated */
   isAuthenticated: boolean;
 }
 
@@ -85,23 +91,22 @@ export default function AuthButton({ isAuthenticated }: AuthButtonProps) {
     };
   }, [showLoginModal, handleKeyDown]);
 
-  const handleLoginClick = (e: React.MouseEvent) => {
+  const handleLoginClick = (e: React.MouseEvent): void => {
     // If user has already made a choice, go directly to login
     const choiceMade = localStorage.getItem(CHOICE_KEY);
-    if (choiceMade) {
-      return; // Let the link navigate normally
-    }
+    if (choiceMade) return; // Let the link navigate normally
+
     e.preventDefault();
     setShowLoginModal(true);
   };
 
-  const handleContinueToLogin = () => {
+  const handleContinueToLogin = (): void => {
     // Save analytics preference
     localStorage.setItem(CHOICE_KEY, 'true');
-    if (!analyticsEnabled) {
-      localStorage.setItem(OPTOUT_KEY, 'true');
-    } else {
+    if (analyticsEnabled) {
       localStorage.removeItem(OPTOUT_KEY);
+    } else {
+      localStorage.setItem(OPTOUT_KEY, 'true');
     }
     // Navigate to login
     window.location.href = '/api/auth/login';

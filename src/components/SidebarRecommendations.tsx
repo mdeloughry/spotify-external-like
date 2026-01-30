@@ -4,8 +4,11 @@ import type { TrackWithLiked } from '../lib/api-client';
 import { getAlbumImageUrl } from '../lib/spotify';
 import { UI } from '../lib/constants';
 
+/** Props for the sidebar recommendations component */
 interface SidebarRecommendationsProps {
+  /** Currently selected/playing track to base recommendations on */
   currentTrack: SpotifyTrack | null;
+  /** Callback when user selects a recommended track */
   onTrackSelect?: (track: SpotifyTrack) => void;
 }
 
@@ -42,7 +45,7 @@ export default function SidebarRecommendations({ currentTrack, onTrackSelect }: 
     }
   }, [currentTrack?.id, fetchRecommendations]);
 
-  const handleLike = async (track: TrackWithLiked) => {
+  const handleLike = async (track: TrackWithLiked): Promise<void> => {
     const method = track.isLiked ? 'DELETE' : 'POST';
     try {
       const response = await fetch('/api/like', {
@@ -51,11 +54,11 @@ export default function SidebarRecommendations({ currentTrack, onTrackSelect }: 
         body: JSON.stringify({ trackId: track.id }),
       });
 
-      if (response.ok) {
-        setRecommendations((prev) =>
-          prev.map((t) => (t.id === track.id ? { ...t, isLiked: !t.isLiked } : t))
-        );
-      }
+      if (!response.ok) return;
+
+      setRecommendations((prev) =>
+        prev.map((t) => (t.id === track.id ? { ...t, isLiked: !t.isLiked } : t))
+      );
     } catch (err) {
       console.error('Failed to toggle like:', err);
     }

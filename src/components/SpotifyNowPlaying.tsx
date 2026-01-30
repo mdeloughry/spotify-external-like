@@ -6,15 +6,23 @@ import { copyTrackUrl } from '../lib/clipboard';
 import { POLLING, UI } from '../lib/constants';
 import PsychedelicVisualizer from './PsychedelicVisualizer';
 
+/** Data returned from the now-playing API endpoint */
 interface NowPlayingData {
+  /** Whether any track is currently playing */
   playing: boolean;
+  /** Spotify's is_playing status */
   is_playing?: boolean;
+  /** Current playback position in milliseconds */
   progress_ms?: number;
+  /** Currently playing track with liked status */
   track?: TrackWithLiked;
 }
 
+/** Props for the Spotify now playing component */
 interface SpotifyNowPlayingProps {
+  /** Callback when user selects the current track */
   onTrackSelect?: (track: SpotifyTrack) => void;
+  /** Callback when the playing track changes */
   onTrackChange?: (track: SpotifyTrack | null) => void;
 }
 
@@ -26,14 +34,14 @@ export default function SpotifyNowPlaying({ onTrackSelect, onTrackChange }: Spot
   const clickCountRef = useRef(0);
   const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const handleShare = async () => {
+  const handleShare = async (): Promise<void> => {
     const result = await copyTrackUrl(nowPlaying?.track?.external_urls?.spotify);
     if (!result.success) {
       console.error('Failed to copy track URL to clipboard:', result.error);
     }
   };
 
-  const handleNowPlayingClick = () => {
+  const handleNowPlayingClick = (): void => {
     clickCountRef.current += 1;
 
     // Reset click count after timeout
@@ -45,10 +53,10 @@ export default function SpotifyNowPlaying({ onTrackSelect, onTrackChange }: Spot
     }, UI.MULTI_CLICK_TIMEOUT_MS);
 
     // Trigger visualizer on configured click count
-    if (clickCountRef.current >= UI.EASTER_EGG_CLICK_COUNT) {
-      clickCountRef.current = 0;
-      setShowVisualizer(true);
-    }
+    if (clickCountRef.current < UI.EASTER_EGG_CLICK_COUNT) return;
+
+    clickCountRef.current = 0;
+    setShowVisualizer(true);
   };
 
   // Fetch currently playing track
@@ -89,7 +97,7 @@ export default function SpotifyNowPlaying({ onTrackSelect, onTrackChange }: Spot
     }
   }, [nowPlaying?.is_playing]);
 
-  const handleLike = async () => {
+  const handleLike = async (): Promise<void> => {
     if (!nowPlaying?.track) return;
 
     const method = isLiked ? 'DELETE' : 'POST';
@@ -100,12 +108,13 @@ export default function SpotifyNowPlaying({ onTrackSelect, onTrackChange }: Spot
         body: JSON.stringify({ trackId: nowPlaying.track.id }),
       });
 
-      if (response.ok) {
-        setIsLiked(!isLiked);
-      } else {
+      if (!response.ok) {
         const data = await response.json().catch(() => ({}));
         console.error('Failed to toggle like:', data.error || response.statusText);
+        return;
       }
+
+      setIsLiked(!isLiked);
     } catch (err) {
       console.error('Failed to toggle like:', err);
     }

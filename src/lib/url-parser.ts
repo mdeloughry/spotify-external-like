@@ -95,6 +95,134 @@ class SpotifyUrlParser implements PlatformParser {
   }
 }
 
+class DeezerParser implements PlatformParser {
+  readonly platform = 'deezer';
+
+  match(url: URL): boolean {
+    const hostname = url.hostname.toLowerCase();
+    return hostname === 'deezer.com' || hostname.endsWith('.deezer.com');
+  }
+
+  parse(url: URL): string | null {
+    // deezer.com/track/123456 or deezer.com/en/track/123456
+    if (url.pathname.includes('/track/')) {
+      return url.href; // Return full URL for page title fetching
+    }
+    return null;
+  }
+}
+
+class AppleMusicParser implements PlatformParser {
+  readonly platform = 'apple-music';
+
+  match(url: URL): boolean {
+    const hostname = url.hostname.toLowerCase();
+    return hostname === 'music.apple.com' || hostname.endsWith('.music.apple.com');
+  }
+
+  parse(url: URL): string | null {
+    // music.apple.com/us/album/song-name/123456?i=789
+    // music.apple.com/us/song/song-name/123456
+    if (url.pathname.includes('/album/') || url.pathname.includes('/song/')) {
+      return url.href;
+    }
+    return null;
+  }
+}
+
+class BandcampParser implements PlatformParser {
+  readonly platform = 'bandcamp';
+
+  match(url: URL): boolean {
+    const hostname = url.hostname.toLowerCase();
+    return hostname.endsWith('.bandcamp.com') || hostname === 'bandcamp.com';
+  }
+
+  parse(url: URL): string | null {
+    // artist.bandcamp.com/track/track-name
+    if (url.pathname.includes('/track/')) {
+      return url.href;
+    }
+    return null;
+  }
+}
+
+class TidalParser implements PlatformParser {
+  readonly platform = 'tidal';
+
+  match(url: URL): boolean {
+    const hostname = url.hostname.toLowerCase();
+    return hostname === 'tidal.com' || hostname.endsWith('.tidal.com') ||
+           hostname === 'listen.tidal.com';
+  }
+
+  parse(url: URL): string | null {
+    // tidal.com/browse/track/123456 or listen.tidal.com/track/123456
+    if (url.pathname.includes('/track/')) {
+      return url.href;
+    }
+    return null;
+  }
+}
+
+class AmazonMusicParser implements PlatformParser {
+  readonly platform = 'amazon-music';
+
+  match(url: URL): boolean {
+    const hostname = url.hostname.toLowerCase();
+    return hostname === 'music.amazon.com' ||
+           hostname.endsWith('.music.amazon.com') ||
+           (hostname.includes('amazon.') && url.pathname.includes('/music/'));
+  }
+
+  parse(url: URL): string | null {
+    // music.amazon.com/albums/B08...?trackAsin=B08...
+    // music.amazon.com/tracks/B08...
+    // amazon.com/music/player/albums/...
+    if (url.pathname.includes('/albums/') ||
+        url.pathname.includes('/tracks/') ||
+        url.pathname.includes('/music/')) {
+      return url.href;
+    }
+    return null;
+  }
+}
+
+class MixcloudParser implements PlatformParser {
+  readonly platform = 'mixcloud';
+
+  match(url: URL): boolean {
+    const hostname = url.hostname.toLowerCase();
+    return hostname === 'mixcloud.com' || hostname.endsWith('.mixcloud.com');
+  }
+
+  parse(url: URL): string | null {
+    // mixcloud.com/username/show-name/
+    const parts = url.pathname.split('/').filter(Boolean);
+    if (parts.length >= 2) {
+      return url.href;
+    }
+    return null;
+  }
+}
+
+class BeatportParser implements PlatformParser {
+  readonly platform = 'beatport';
+
+  match(url: URL): boolean {
+    const hostname = url.hostname.toLowerCase();
+    return hostname === 'beatport.com' || hostname.endsWith('.beatport.com');
+  }
+
+  parse(url: URL): string | null {
+    // beatport.com/track/track-name/123456
+    if (url.pathname.includes('/track/')) {
+      return url.href;
+    }
+    return null;
+  }
+}
+
 // =============================================================================
 // Registry
 // =============================================================================
@@ -103,6 +231,13 @@ const parsers: PlatformParser[] = [
   new YouTubeParser(),
   new SoundCloudParser(),
   new SpotifyUrlParser(),
+  new DeezerParser(),
+  new AppleMusicParser(),
+  new BandcampParser(),
+  new TidalParser(),
+  new AmazonMusicParser(),
+  new MixcloudParser(),
+  new BeatportParser(),
 ];
 
 /**

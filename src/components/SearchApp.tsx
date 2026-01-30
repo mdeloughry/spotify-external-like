@@ -9,18 +9,63 @@ import SidebarRecommendations from './SidebarRecommendations';
 import type { SpotifyTrack } from '../lib/spotify';
 import type { TrackWithLiked } from '../lib/api-client';
 import { parseTrackUrl } from '../lib/url-parser';
+import { parsePlaylistUrl } from '../lib/playlist-parser';
 import { useSearchHistory, useAudioPlayer, useKeyboardShortcuts, shortcutPresets } from '../hooks';
 import { UI } from '../lib/constants';
 
+const PLATFORM_NAMES: Record<string, string> = {
+  'youtube': 'YouTube',
+  'soundcloud': 'SoundCloud',
+  'spotify': 'Spotify',
+  'deezer': 'Deezer',
+  'apple-music': 'Apple Music',
+  'bandcamp': 'Bandcamp',
+  'tidal': 'Tidal',
+  'amazon-music': 'Amazon Music',
+  'mixcloud': 'Mixcloud',
+  'beatport': 'Beatport',
+};
+
+/** Props for the main search application component */
 interface SearchAppProps {
+  /** Initial search query to populate on mount */
   initialQuery?: string;
 }
 
+/** Represents a recent user action for the activity feed */
 interface RecentAction {
+  /** The track that was acted upon */
   track: SpotifyTrack;
+  /** Type of action performed */
   action: 'liked' | 'added_to_playlist';
+  /** Name of playlist if action was adding to playlist */
   playlistName?: string;
+  /** When the action occurred */
   timestamp: Date;
+}
+
+/** Result summary from importing an external playlist */
+interface PlaylistImportResult {
+  /** Source platform (youtube, soundcloud, etc.) */
+  platform: string;
+  /** Import statistics */
+  summary: {
+    total: number;
+    found: number;
+    notFound: number;
+  };
+}
+
+/** Individual track result from playlist import */
+interface ImportedTrackResult {
+  /** Whether the track was found on Spotify */
+  status: 'found' | 'not_found';
+  /** Matched Spotify track, null if not found */
+  spotifyTrack: TrackWithLiked | null;
+  /** Original track title from source platform */
+  originalTitle: string;
+  /** Original artist name from source platform */
+  originalArtist?: string;
 }
 
 export default function SearchApp({ initialQuery }: SearchAppProps) {
@@ -34,10 +79,13 @@ export default function SearchApp({ initialQuery }: SearchAppProps) {
   const [urlImportSource, setUrlImportSource] = useState<string | null>(null);
   const [spotifyCurrentTrack, setSpotifyCurrentTrack] = useState<SpotifyTrack | null>(null);
   const [announcement, setAnnouncement] = useState<string>('');
+  const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
+  const [playlistImport, setPlaylistImport] = useState<PlaylistImportResult | null>(null);
+  const [hasActiveSession, setHasActiveSession] = useState(false);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
 
-  // Helper to announce messages to screen readers
-  const announce = (message: string) => {
+  /** Announces messages to screen readers */
+  const announce = (message: string): void => {
     setAnnouncement('');
     // Small delay to ensure the announcement is read
     setTimeout(() => setAnnouncement(message), 100);
@@ -75,18 +123,18 @@ export default function SearchApp({ initialQuery }: SearchAppProps) {
     );
 
     // Add to recent actions if liked
-    if (shouldLike) {
-      setTracks((currentTracks) => {
-        const likedTrack = currentTracks.find((t) => t.id === trackId);
-        if (likedTrack) {
-          setRecentActions((prev) => [
-            { track: likedTrack, action: 'liked', timestamp: new Date() },
-            ...prev.slice(0, UI.MAX_RECENT_ACTIONS - 1),
-          ]);
-        }
-        return currentTracks;
-      });
-    }
+    if (!shouldLike) return;
+
+    setTracks((currentTracks) => {
+      const likedTrack = currentTracks.find((t) => t.id === trackId);
+      if (!likedTrack) return currentTracks;
+
+      setRecentActions((prev) => [
+        { track: likedTrack, action: 'liked', timestamp: new Date() },
+        ...prev.slice(0, UI.MAX_RECENT_ACTIONS - 1),
+      ]);
+      return currentTracks;
+    });
   }, []);
 
   const handleSearch = useCallback(async (query: string) => {
@@ -98,15 +146,46 @@ export default function SearchApp({ initialQuery }: SearchAppProps) {
     setError(null);
     setHasSearched(true);
     setUrlImportSource(null);
+    setSearchSuggestions([]);
+    setPlaylistImport(null);
 
-    // Check if query is a URL
+    // Check if query is a playlist URL first
+    const playlistParsed = parsePlaylistUrl(query);
+
+    // Check if query is a track URL
     const urlParsed = parseTrackUrl(query);
 
     try {
       let data;
 
-      if (urlParsed) {
-        // Handle URL import
+      if (playlistParsed) {
+        // Handle playlist import
+        const response = await fetch('/api/import-playlist', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: query }),
+        });
+        data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Playlist import failed');
+        }
+
+        // Extract found tracks
+        const foundTracks = (data.tracks as ImportedTrackResult[])
+          .filter((t) => t.status === 'found' && t.spotifyTrack !== null)
+          .map((t) => t.spotifyTrack as TrackWithLiked);
+
+        setTracks(foundTracks);
+        setUrlImportSource(data.platform);
+        setPlaylistImport({
+          platform: data.platform,
+          summary: data.summary,
+        });
+
+        announce(`Imported playlist: ${data.summary.found} of ${data.summary.total} tracks found`);
+      } else if (urlParsed) {
+        // Handle single track URL import
         const response = await fetch('/api/import-url', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -123,6 +202,15 @@ export default function SearchApp({ initialQuery }: SearchAppProps) {
           // Add the extracted search query to history instead of the URL
           addToHistory(data.searchQuery);
         }
+        setTracks(data.tracks);
+        // Announce results to screen readers
+        if (data.tracks.length === 0) {
+          announce('No tracks found');
+        } else if (data.tracks.length === 1) {
+          announce('Found 1 track');
+        } else {
+          announce(`Found ${data.tracks.length} tracks`);
+        }
       } else {
         // Regular search
         addToHistory(query);
@@ -133,16 +221,20 @@ export default function SearchApp({ initialQuery }: SearchAppProps) {
         if (!response.ok) {
           throw new Error(data.error || 'Search failed');
         }
-      }
 
-      setTracks(data.tracks);
-      // Announce results to screen readers
-      if (data.tracks.length === 0) {
-        announce('No tracks found');
-      } else if (data.tracks.length === 1) {
-        announce('Found 1 track');
-      } else {
-        announce(`Found ${data.tracks.length} tracks`);
+        setTracks(data.tracks);
+        // Store search suggestions if available
+        if (data.suggestions && data.suggestions.length > 0) {
+          setSearchSuggestions(data.suggestions);
+        }
+        // Announce results to screen readers
+        if (data.tracks.length === 0) {
+          announce('No tracks found');
+        } else if (data.tracks.length === 1) {
+          announce('Found 1 track');
+        } else {
+          announce(`Found ${data.tracks.length} tracks`);
+        }
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Search failed';
@@ -162,6 +254,57 @@ export default function SearchApp({ initialQuery }: SearchAppProps) {
       handleSearch(initialQuery);
     }
   }, [initialQuery, handleSearch]);
+
+  // Check for active Spotify playback session
+  useEffect(() => {
+    const checkPlaybackState = async (): Promise<void> => {
+      try {
+        const response = await fetch('/api/player/state');
+        if (response.ok) {
+          const data = await response.json();
+          setHasActiveSession(data.hasActiveSession);
+        }
+      } catch {
+        setHasActiveSession(false);
+      }
+    };
+
+    // Check immediately and then every 30 seconds
+    checkPlaybackState();
+    const interval = setInterval(checkPlaybackState, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Handlers for Spotify playback actions
+  const handleAddToQueue = useCallback(async (track: SpotifyTrack): Promise<void> => {
+    const response = await fetch('/api/player/queue', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ trackUri: track.uri }),
+    });
+
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.error || 'Failed to add to queue');
+    }
+
+    announce(`Added ${track.name} to queue`);
+  }, []);
+
+  const handlePlayNow = useCallback(async (track: SpotifyTrack): Promise<void> => {
+    const response = await fetch('/api/player/play', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ trackUri: track.uri }),
+    });
+
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.error || 'Failed to play track');
+    }
+
+    announce(`Now playing ${track.name}`);
+  }, []);
 
 // Use keyboard shortcuts hook (DRY principle - replaces manual keydown handler)
   useKeyboardShortcuts([
@@ -301,26 +444,56 @@ export default function SearchApp({ initialQuery }: SearchAppProps) {
         </div>
       )}
 
-      {/* URL Import indicator */}
-      {urlImportSource && !error && (
+      {/* Playlist Import indicator */}
+      {playlistImport && !error && (
+        <div className="bg-spotify-green/10 border border-spotify-green/20 rounded-lg p-4">
+          <div className="flex items-center gap-2 text-sm">
+            <svg className="w-5 h-5 text-spotify-green" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M15 6H3v2h12V6zm0 4H3v2h12v-2zM3 16h8v-2H3v2zM17 6v8.18c-.31-.11-.65-.18-1-.18-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3V8h3V6h-5z" />
+            </svg>
+            <span className="font-medium text-white">
+              Playlist imported from {PLATFORM_NAMES[playlistImport.platform] || playlistImport.platform}
+            </span>
+          </div>
+          <div className="mt-2 flex items-center gap-4 text-sm text-spotify-lightgray">
+            <span className="flex items-center gap-1">
+              <span className="text-spotify-green font-medium">{playlistImport.summary.found}</span> found
+            </span>
+            {playlistImport.summary.notFound > 0 && (
+              <span className="flex items-center gap-1">
+                <span className="text-amber-400 font-medium">{playlistImport.summary.notFound}</span> not found
+              </span>
+            )}
+            <span className="text-spotify-lightgray/60">
+              ({playlistImport.summary.total} total)
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* URL Import indicator (single track) */}
+      {urlImportSource && !playlistImport && !error && (
         <div className="flex items-center justify-center gap-2 text-sm text-spotify-lightgray">
           <svg className="w-4 h-4 text-spotify-green" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
           </svg>
-          <span>
-            Imported from{" "}
-            {urlImportSource === 'youtube'
-              ? 'YouTube'
-              : urlImportSource === 'soundcloud'
-                ? 'SoundCloud'
-                : urlImportSource === 'deezer'
-                  ? 'Deezer'
-                  : urlImportSource === 'apple-music'
-                    ? 'Apple Music'
-                    : urlImportSource === 'bandcamp'
-                      ? 'Bandcamp'
-                      : 'Spotify'}
-          </span>
+          <span>Imported from {PLATFORM_NAMES[urlImportSource] || urlImportSource}</span>
+        </div>
+      )}
+
+      {/* Search suggestions ("Did you mean?") */}
+      {searchSuggestions.length > 0 && !isLoading && (
+        <div className="flex flex-wrap items-center justify-center gap-2 text-sm">
+          <span className="text-spotify-lightgray">Try:</span>
+          {searchSuggestions.map((suggestion, index) => (
+            <button
+              key={index}
+              onClick={() => handleSearch(suggestion)}
+              className="px-3 py-1 rounded-full bg-spotify-gray/30 text-white hover:bg-spotify-green/20 hover:text-spotify-green transition-colors border border-white/10"
+            >
+              {suggestion}
+            </button>
+          ))}
         </div>
       )}
 
@@ -343,6 +516,9 @@ export default function SearchApp({ initialQuery }: SearchAppProps) {
                   onAddToPlaylist={setSelectedTrack}
                   playingTrackId={playingTrackId}
                   onPlayToggle={toggleAudio}
+                  hasActiveSession={hasActiveSession}
+                  onAddToQueue={handleAddToQueue}
+                  onPlayNow={handlePlayNow}
                 />
               )}
 

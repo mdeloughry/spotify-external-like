@@ -1,8 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
+/** Props for the truncated text component with tooltip */
 interface TruncatedTextProps {
+  /** Text content to display */
   text: string;
+  /** Additional CSS classes */
   className?: string;
 }
 
@@ -15,10 +18,9 @@ export default function TruncatedText({ text, className = '' }: TruncatedTextPro
 
   // Check if text is actually truncated
   useEffect(() => {
-    const checkTruncation = () => {
-      if (textRef.current) {
-        setIsTruncated(textRef.current.scrollWidth > textRef.current.clientWidth);
-      }
+    const checkTruncation = (): void => {
+      if (!textRef.current) return;
+      setIsTruncated(textRef.current.scrollWidth > textRef.current.clientWidth);
     };
 
     checkTruncation();
@@ -28,27 +30,27 @@ export default function TruncatedText({ text, className = '' }: TruncatedTextPro
     return () => window.removeEventListener('resize', checkTruncation);
   }, [text]);
 
-  const updateTooltipPosition = () => {
-    if (textRef.current) {
-      const rect = textRef.current.getBoundingClientRect();
-      setTooltipPosition({
-        top: rect.bottom + 8, // 8px below the text
-        left: rect.left,
-      });
-    }
+  const updateTooltipPosition = (): void => {
+    if (!textRef.current) return;
+
+    const rect = textRef.current.getBoundingClientRect();
+    setTooltipPosition({
+      top: rect.bottom + 8, // 8px below the text
+      left: rect.left,
+    });
   };
 
-  const handleMouseEnter = () => {
-    if (isTruncated) {
-      updateTooltipPosition();
-      timeoutRef.current = setTimeout(() => {
-        updateTooltipPosition(); // Update position again when showing
-        setShowTooltip(true);
-      }, 500);
-    }
+  const handleMouseEnter = (): void => {
+    if (!isTruncated) return;
+
+    updateTooltipPosition();
+    timeoutRef.current = setTimeout(() => {
+      updateTooltipPosition(); // Update position again when showing
+      setShowTooltip(true);
+    }, 500);
   };
 
-  const handleMouseLeave = () => {
+  const handleMouseLeave = (): void => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }

@@ -4,11 +4,17 @@ import type { TrackWithLiked } from '../lib/api-client';
 import { formatDuration, getAlbumImageUrl } from '../lib/spotify';
 import { UI } from '../lib/constants';
 
+/** Props for the suggestions/recommendations component */
 interface SuggestionsProps {
+  /** Track IDs to use as seeds for recommendations */
   seedTrackIds: string[];
+  /** Callback to toggle like status */
   onLikeToggle: (trackId: string, isLiked: boolean) => Promise<void>;
+  /** Callback to open playlist selector */
   onAddToPlaylist: (track: SpotifyTrack) => void;
+  /** Callback to toggle audio preview */
   onPlayToggle: (track: SpotifyTrack) => void;
+  /** Currently playing track ID */
   playingTrackId: string | null;
 }
 
@@ -32,7 +38,7 @@ export default function Suggestions({
       return;
     }
 
-    const fetchSuggestions = async () => {
+    const fetchSuggestions = async (): Promise<void> => {
       setIsLoading(true);
       setError(null);
 
@@ -55,7 +61,7 @@ export default function Suggestions({
     fetchSuggestions();
   }, [seedsKey]);
 
-  const handleLike = async (track: TrackWithLiked) => {
+  const handleLike = async (track: TrackWithLiked): Promise<void> => {
     try {
       await onLikeToggle(track.id, !track.isLiked);
       setTracks((prev) =>

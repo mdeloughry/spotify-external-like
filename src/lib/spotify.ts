@@ -244,6 +244,54 @@ export interface CurrentlyPlaying {
   currently_playing_type: 'track' | 'episode' | 'ad' | 'unknown';
 }
 
+export interface PlaylistTracksResponse {
+  items: Array<{
+    track: SpotifyTrack | null;
+    added_at: string;
+  }>;
+  total: number;
+  limit: number;
+  offset: number;
+  next: string | null;
+}
+
+/**
+ * Get tracks from a playlist
+ * @param playlistId - The Spotify playlist ID
+ * @param token - The access token
+ * @param limit - Max tracks to fetch (default 100)
+ */
+export async function getPlaylistTracks(
+  playlistId: string,
+  token: string,
+  limit = 100
+): Promise<PlaylistTracksResponse> {
+  const params = new URLSearchParams({
+    limit: Math.min(limit, 100).toString(),
+    fields: 'items(track(id)),total,limit,offset,next',
+  });
+  return spotifyFetch<PlaylistTracksResponse>(`/playlists/${playlistId}/tracks?${params}`, token);
+}
+
+/**
+ * Check if a track exists in a playlist
+ * @param playlistId - The Spotify playlist ID
+ * @param trackId - The track ID to check
+ * @param token - The access token
+ * @returns true if the track is in the playlist
+ */
+export async function isTrackInPlaylist(
+  playlistId: string,
+  trackId: string,
+  token: string
+): Promise<boolean> {
+  // Fetch first 100 tracks and check
+  // For very large playlists, this might miss tracks beyond 100
+  // but it's a reasonable trade-off for performance
+  const response = await getPlaylistTracks(playlistId, token, 100);
+  return response.items.some(item => item.track?.id === trackId);
+}
+
 export async function getCurrentlyPlaying(token: string): Promise<CurrentlyPlaying | null> {
   try {
     const response = await fetch(`${SPOTIFY_API_BASE}/me/player/currently-playing`, {
@@ -265,4 +313,87 @@ export async function getCurrentlyPlaying(token: string): Promise<CurrentlyPlayi
   } catch {
     return null;
   }
+}
+
+/** Playback state response from Spotify */
+export interface PlaybackState {
+  /** The device currently playing */
+  device: {
+    id: string;
+    name: string;
+    type: string;
+    is_active: boolean;
+    is_restricted: boolean;
+    volume_percent: number;
+  } | null;
+  /** Whether playback is active */
+  is_playing: boolean;
+  /** Currently playing track */
+  item: SpotifyTrack | null;
+  /** Playback progress in ms */
+  progress_ms: number | null;
+  /** Shuffle state */
+  shuffle_state: boolean;
+  /** Repeat state */
+  repeat_state: 'off' | 'track' | 'context';
+}
+
+/**
+ * Get current playback state including active device
+ * @param token - The access token
+ * @returns Playback state or null if no active session
+ */
+export async function getPlaybackState(token: string): Promise<PlaybackState | null> {
+  try {
+    const response = await fetch(`${SPOTIFY_API_BASE}/me/player`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    // 204 means no active device
+    if (response.status === 204) {
+      return null;
+    }
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return response.json();
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Add a track to the user's playback queue
+ * Requires an active playback session
+ * @param trackUri - The Spotify track URI (spotify:track:xxx)
+ * @param token - The access token
+ */
+export async function addToQueue(trackUri: string, token: string): Promise<void> {
+  const params = new URLSearchParams({ uri: trackUri });
+  await spotifyFetch<void>(`/me/player/queue?${params}`, token, {
+    method: 'POST',
+  });
+}
+
+/**
+ * Start playing a track immediately
+ * Requires an active playback session
+ * @param trackUri - The Spotify track URI (spotify:track:xxx)
+ * @param token - The access token
+ * @param deviceId - Optional device ID to play on
+ */
+export async function playTrack(
+  trackUri: string,
+  token: string,
+  deviceId?: string
+): Promise<void> {
+  const params = deviceId ? new URLSearchParams({ device_id: deviceId }) : '';
+  await spotifyFetch<void>(`/me/player/play${params ? `?${params}` : ''}`, token, {
+    method: 'PUT',
+    body: JSON.stringify({ uris: [trackUri] }),
+  });
 }

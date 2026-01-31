@@ -115,17 +115,21 @@ export default function SearchApp({ initialQuery }: SearchAppProps) {
       )
     );
 
-    // Add to recent actions if liked
-    if (!shouldLike) return;
-
+    // Add to recent actions and announce to screen readers
+    // Use setTracks callback to access current tracks without stale closure
     setTracks((currentTracks) => {
       const likedTrack = currentTracks.find((t) => t.id === trackId);
-      if (!likedTrack) return currentTracks;
-
-      setRecentActions((prev) => [
-        { track: likedTrack, action: 'liked', timestamp: new Date() },
-        ...prev.slice(0, UI.MAX_RECENT_ACTIONS - 1),
-      ]);
+      if (likedTrack) {
+        if (shouldLike) {
+          setRecentActions((prev) => [
+            { track: likedTrack, action: 'liked', timestamp: new Date() },
+            ...prev.slice(0, UI.MAX_RECENT_ACTIONS - 1),
+          ]);
+          announce(`${likedTrack.name} saved to Liked Songs`);
+        } else {
+          announce(`${likedTrack.name} removed from Liked Songs`);
+        }
+      }
       return currentTracks;
     });
   }, []);

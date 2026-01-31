@@ -2,47 +2,119 @@ import { useState } from 'react';
 import type { SpotifyTrack } from '../lib/spotify';
 import { formatDuration, getAlbumImageUrl, formatArtists } from '../lib/spotify';
 import { copyTrackUrl } from '../lib/clipboard';
+import { captureError } from '../lib/error-tracking';
+import TruncatedText from './TruncatedText';
 
+/** Props for the track card component */
 interface TrackCardProps {
+  /** Track data with liked status */
   track: SpotifyTrack & { isLiked: boolean };
+  /** Callback to toggle like status */
   onLikeToggle: (trackId: string, isLiked: boolean) => Promise<void>;
+  /** Callback to open playlist selector */
   onAddToPlaylist: (track: SpotifyTrack) => void;
-  isPlaying: boolean;
-  onPlayToggle: (track: SpotifyTrack) => void;
+  /** Whether there's an active Spotify playback session */
+  hasActiveSession?: boolean;
+  /** Callback to add track to Spotify queue */
+  onAddToQueue?: (track: SpotifyTrack) => Promise<void>;
+  /** Callback to play track immediately on Spotify */
+  onPlayNow?: (track: SpotifyTrack) => Promise<void>;
 }
 
-export default function TrackCard({ track, onLikeToggle, onAddToPlaylist, isPlaying, onPlayToggle }: TrackCardProps) {
+export default function TrackCard({
+  track,
+  onLikeToggle,
+  onAddToPlaylist,
+  hasActiveSession = false,
+  onAddToQueue,
+  onPlayNow,
+}: TrackCardProps) {
   const [isLiked, setIsLiked] = useState(track.isLiked);
   const [isLikeLoading, setIsLikeLoading] = useState(false);
+  const [isQueueLoading, setIsQueueLoading] = useState(false);
+  const [isPlayLoading, setIsPlayLoading] = useState(false);
+  const [queueSuccess, setQueueSuccess] = useState(false);
+  const [queueError, setQueueError] = useState<string | null>(null);
 
   const albumImage = getAlbumImageUrl(track.album, 'medium');
   const artists = formatArtists(track.artists);
-  const hasPreview = !!track.preview_url;
 
-  const handleShareClick = async () => {
+  const handleShareClick = async (): Promise<void> => {
     const result = await copyTrackUrl(track.external_urls?.spotify);
     if (!result.success) {
-      console.error('Failed to copy track URL to clipboard:', result.error);
+      captureError(result.error || 'Failed to copy track URL to clipboard', {
+        action: 'copy_track_url',
+        trackId: track.id,
+        trackName: track.name,
+      });
     }
   };
 
-  const handleLikeClick = async () => {
+  const handleLikeClick = async (): Promise<void> => {
     setIsLikeLoading(true);
     try {
       await onLikeToggle(track.id, !isLiked);
       setIsLiked(!isLiked);
     } catch (err) {
-      console.error('Failed to toggle like:', err);
+      captureError(err instanceof Error ? err : new Error(String(err)), {
+        action: 'like_toggle',
+        trackId: track.id,
+        trackName: track.name,
+        attemptedState: !isLiked,
+      });
     } finally {
       setIsLikeLoading(false);
+    }
+  };
+
+  const handleAddToQueue = async (): Promise<void> => {
+    if (!onAddToQueue) return;
+
+    setIsQueueLoading(true);
+    setQueueSuccess(false);
+    setQueueError(null);
+    try {
+      await onAddToQueue(track);
+      setQueueSuccess(true);
+      // Reset success indicator after 2 seconds
+      setTimeout(() => setQueueSuccess(false), 2000);
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      captureError(error, {
+        action: 'add_to_queue',
+        trackId: track.id,
+        trackName: track.name,
+      });
+      setQueueError(error.message || 'Failed to add to queue');
+      // Clear error after 3 seconds
+      setTimeout(() => setQueueError(null), 3000);
+    } finally {
+      setIsQueueLoading(false);
+    }
+  };
+
+  const handlePlayNow = async (): Promise<void> => {
+    if (!onPlayNow) return;
+
+    setIsPlayLoading(true);
+    try {
+      await onPlayNow(track);
+    } catch (err) {
+      captureError(err instanceof Error ? err : new Error(String(err)), {
+        action: 'play_now',
+        trackId: track.id,
+        trackName: track.name,
+      });
+    } finally {
+      setIsPlayLoading(false);
     }
   };
 
   return (
     <div className="group relative w-full max-w-full overflow-hidden rounded-2xl border border-white/5 bg-white/[0.02] shadow-[0_18px_60px_rgba(0,0,0,0.7)] hover:border-emerald-400/40 hover:bg-white/[0.04] transition-all">
       <div className="flex items-center gap-4 px-4 py-3 w-full min-w-0">
-        {/* Album Art with Play Button */}
-        <div className="flex-shrink-0 relative">
+        {/* Album Art */}
+        <div className="flex-shrink-0">
           {albumImage ? (
             <img
               src={albumImage}
@@ -56,24 +128,6 @@ export default function TrackCard({ track, onLikeToggle, onAddToPlaylist, isPlay
               </svg>
             </div>
           )}
-          {/* Play/Pause overlay */}
-          <button
-            onClick={() => onPlayToggle(track)}
-            disabled={!hasPreview}
-            className={`absolute inset-0 flex items-center justify-center bg-black/60 rounded-xl transition-opacity ${isPlaying ? 'opacity-100' : 'opacity-0 hover:opacity-100'
-              } ${!hasPreview ? 'cursor-not-allowed' : 'cursor-pointer'}`}
-            aria-label={!hasPreview ? `No preview available for ${track.name}` : isPlaying ? `Pause preview of ${track.name}` : `Play preview of ${track.name}`}
-          >
-            {isPlaying ? (
-              <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
-              </svg>
-            ) : (
-              <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M8 5v14l11-7z" />
-              </svg>
-            )}
-          </button>
         </div>
 
         {/* Track Info */}
@@ -84,17 +138,12 @@ export default function TrackCard({ track, onLikeToggle, onAddToPlaylist, isPlay
             rel="noopener noreferrer"
             className="block text-sm font-medium text-white hover:text-emerald-200"
             aria-label={`${track.name} (opens in Spotify)`}
-            title={track.name}
           >
-            <span className="block truncate">{track.name}</span>
+            <TruncatedText text={track.name} className="text-sm font-medium" />
             <span className="sr-only"> (opens in new tab)</span>
           </a>
-          <p className="text-xs text-spotify-lightgray truncate" title={artists}>
-            {artists}
-          </p>
-          <p className="mt-1 text-xs text-spotify-lightgray/70 truncate" title={track.album.name}>
-            {track.album.name}
-          </p>
+          <TruncatedText text={artists} className="text-xs text-spotify-lightgray" />
+          <TruncatedText text={track.album.name} className="mt-1 text-xs text-spotify-lightgray/70" />
         </div>
 
         {/* Meta + Actions */}
@@ -105,20 +154,12 @@ export default function TrackCard({ track, onLikeToggle, onAddToPlaylist, isPlay
           </span>
 
           {/* Status pills */}
-          <div className="flex flex-wrap justify-end gap-1">
-            {hasPreview && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-400/10 px-2 py-0.5 text-[0.6rem] sm:text-xs uppercase tracking-[0.16em] text-emerald-200">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-300" aria-hidden="true" />
-                Preview
-              </span>
-            )}
-            {isLiked && (
-              <span className="inline-flex items-center gap-1 rounded-full border border-white/15 px-2 py-0.5 text-[0.6rem] sm:text-xs uppercase tracking-[0.16em] text-spotify-lightgray">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-300" aria-hidden="true" />
-                Liked
-              </span>
-            )}
-          </div>
+          {isLiked && (
+            <span className="inline-flex items-center gap-1 rounded-full border border-white/15 px-2 py-0.5 text-[0.6rem] sm:text-xs uppercase tracking-[0.16em] text-spotify-lightgray">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-300" aria-hidden="true" />
+              Liked
+            </span>
+          )}
 
           {/* Actions */}
           <div className="flex items-center gap-2">
@@ -171,6 +212,58 @@ export default function TrackCard({ track, onLikeToggle, onAddToPlaylist, isPlay
               </svg>
             </button>
 
+            {/* Add to Queue Button - only visible with active session */}
+            {hasActiveSession && onAddToQueue && (
+              <button
+                onClick={handleAddToQueue}
+                disabled={isQueueLoading}
+                className={`p-2.5 sm:p-2 min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 rounded-full transition-colors flex items-center justify-center ${
+                  queueSuccess
+                    ? 'text-spotify-green'
+                    : queueError
+                    ? 'text-red-400'
+                    : 'text-spotify-lightgray hover:text-white'
+                } disabled:opacity-50`}
+                aria-label={`Add ${track.name} to queue`}
+                title="Add to queue"
+              >
+                {isQueueLoading ? (
+                  <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" aria-hidden="true">
+                    <span className="sr-only">Adding to queue...</span>
+                  </div>
+                ) : queueSuccess ? (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h10m-10 4h10" />
+                  </svg>
+                )}
+              </button>
+            )}
+
+            {/* Play Now Button - only visible with active session */}
+            {hasActiveSession && onPlayNow && (
+              <button
+                onClick={handlePlayNow}
+                disabled={isPlayLoading}
+                className="p-2.5 sm:p-2 min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0 rounded-full text-spotify-lightgray hover:text-spotify-green transition-colors flex items-center justify-center disabled:opacity-50"
+                aria-label={`Play ${track.name} now on Spotify`}
+                title="Play now on Spotify"
+              >
+                {isPlayLoading ? (
+                  <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" aria-hidden="true">
+                    <span className="sr-only">Starting playback...</span>
+                  </div>
+                ) : (
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                )}
+              </button>
+            )}
+
             {/* Share Button */}
             <button
               onClick={handleShareClick}
@@ -190,6 +283,13 @@ export default function TrackCard({ track, onLikeToggle, onAddToPlaylist, isPlay
           </div>
         </div>
       </div>
+
+      {/* Queue error message */}
+      {queueError && (
+        <div className="px-4 py-2 bg-red-500/10 border-t border-red-500/20" role="alert">
+          <p className="text-xs text-red-400">{queueError}</p>
+        </div>
+      )}
     </div>
   );
 }

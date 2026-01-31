@@ -184,6 +184,58 @@
       color: #e5e7eb;
     }
 
+    .recent-searches {
+      margin-top: 8px;
+    }
+
+    .recent-title {
+      font-size: 10px;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 4px;
+    }
+
+    .recent-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .recent-item {
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.96);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      color: #d1d5db;
+      font-size: 11px;
+      cursor: pointer;
+      transition: border-color 0.12s ease, background 0.12s ease;
+      max-width: 140px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .recent-item:hover {
+      border-color: rgba(52, 211, 153, 0.6);
+      background: rgba(52, 211, 153, 0.1);
+    }
+
+    .recent-item.is-link {
+      color: #38bdf8;
+    }
+
+    button.import-mode {
+      background-image: linear-gradient(135deg, #38bdf8, #818cf8);
+    }
+
+    button.import-mode:hover {
+      box-shadow:
+        0 10px 26px rgba(56, 189, 248, 0.5),
+        0 0 0 1px rgba(15, 23, 42, 0.9);
+    }
+
     .saved {
       color: #4ade80;
       font-size: 11px;
@@ -309,7 +361,11 @@
     <div class="search-form">
       <div class="input-group">
         <input type="text" id="search" placeholder="Search or paste a link…">
-        <button id="searchBtn">Open</button>
+        <button id="searchBtn">Search</button>
+      </div>
+      <div class="recent-searches" id="recentSearches" style="display: none;">
+        <div class="recent-title">Recent</div>
+        <div class="recent-list" id="recentList"></div>
       </div>
     </div>
 
@@ -332,7 +388,7 @@
     </div>
 
     <div class="hint">
-      <strong>Tip:</strong> Right‑click any text or link in Chrome and choose “Send to Spillover” to pre‑fill the app.
+      <strong>Tip:</strong> Right‑click any text to search, or any Spotify/YouTube/Apple Music link to import. Keyboard shortcut: <strong>Ctrl+Shift+S</strong> (Mac: Cmd+Shift+S)
     </div>
   </div>
 

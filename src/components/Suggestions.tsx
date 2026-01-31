@@ -2,22 +2,23 @@ import { useState, useEffect } from 'react';
 import type { SpotifyTrack } from '../lib/spotify';
 import type { TrackWithLiked } from '../lib/api-client';
 import { formatDuration, getAlbumImageUrl } from '../lib/spotify';
+import { captureError } from '../lib/error-tracking';
 import { UI } from '../lib/constants';
 
+/** Props for the suggestions/recommendations component */
 interface SuggestionsProps {
+  /** Track IDs to use as seeds for recommendations */
   seedTrackIds: string[];
+  /** Callback to toggle like status */
   onLikeToggle: (trackId: string, isLiked: boolean) => Promise<void>;
+  /** Callback to open playlist selector */
   onAddToPlaylist: (track: SpotifyTrack) => void;
-  onPlayToggle: (track: SpotifyTrack) => void;
-  playingTrackId: string | null;
 }
 
 export default function Suggestions({
   seedTrackIds,
   onLikeToggle,
   onAddToPlaylist,
-  onPlayToggle,
-  playingTrackId,
 }: SuggestionsProps) {
   const [tracks, setTracks] = useState<TrackWithLiked[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -32,7 +33,7 @@ export default function Suggestions({
       return;
     }
 
-    const fetchSuggestions = async () => {
+    const fetchSuggestions = async (): Promise<void> => {
       setIsLoading(true);
       setError(null);
 
@@ -46,7 +47,12 @@ export default function Suggestions({
 
         setTracks(data.tracks);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load suggestions');
+        const error = err instanceof Error ? err : new Error(String(err));
+        captureError(error, {
+          action: 'fetch_suggestions',
+          seedTrackIds,
+        });
+        setError(error.message || 'Failed to load suggestions');
       } finally {
         setIsLoading(false);
       }
@@ -55,14 +61,18 @@ export default function Suggestions({
     fetchSuggestions();
   }, [seedsKey]);
 
-  const handleLike = async (track: TrackWithLiked) => {
+  const handleLike = async (track: TrackWithLiked): Promise<void> => {
     try {
       await onLikeToggle(track.id, !track.isLiked);
       setTracks((prev) =>
         prev.map((t) => (t.id === track.id ? { ...t, isLiked: !t.isLiked } : t))
       );
     } catch (err) {
-      console.error('Failed to toggle like:', err);
+      captureError(err instanceof Error ? err : new Error(String(err)), {
+        action: 'like_toggle_suggestion',
+        trackId: track.id,
+        trackName: track.name,
+      });
     }
   };
 
@@ -106,15 +116,14 @@ export default function Suggestions({
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             {tracks.slice(0, UI.MAX_SUGGESTIONS_GRID).map((track) => {
               const albumImage = getAlbumImageUrl(track.album, 'medium');
-              const isPlaying = playingTrackId === track.id;
 
               return (
                 <div
                   key={track.id}
                   className="group bg-spotify-gray/20 rounded-lg p-3 hover:bg-spotify-gray/30 transition-colors"
                 >
-                  {/* Album art with play button */}
-                  <div className="relative mb-3">
+                  {/* Album art */}
+                  <div className="mb-3">
                     {albumImage ? (
                       <img
                         src={albumImage}
@@ -127,24 +136,6 @@ export default function Suggestions({
                           <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
                         </svg>
                       </div>
-                    )}
-                    {track.preview_url && (
-                      <button
-                        onClick={() => onPlayToggle(track)}
-                        className={`absolute bottom-2 right-2 w-10 h-10 bg-spotify-green rounded-full flex items-center justify-center shadow-lg transition-all ${
-                          isPlaying ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0'
-                        }`}
-                      >
-                        {isPlaying ? (
-                          <svg className="w-5 h-5 text-black" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
-                          </svg>
-                        ) : (
-                          <svg className="w-5 h-5 text-black ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M8 5v14l11-7z" />
-                          </svg>
-                        )}
-                      </button>
                     )}
                   </div>
 

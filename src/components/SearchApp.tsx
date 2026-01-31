@@ -2,25 +2,71 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import SearchBar from './SearchBar';
 import TrackList from './TrackList';
 import PlaylistSelector from './PlaylistSelector';
-import NowPlayingBar from './NowPlayingBar';
 import RecentActivity from './RecentActivity';
 import SpotifyNowPlaying from './SpotifyNowPlaying';
 import SidebarRecommendations from './SidebarRecommendations';
 import type { SpotifyTrack } from '../lib/spotify';
 import type { TrackWithLiked } from '../lib/api-client';
 import { parseTrackUrl } from '../lib/url-parser';
-import { useSearchHistory, useAudioPlayer, useKeyboardShortcuts, shortcutPresets } from '../hooks';
+import { parsePlaylistUrl, isTextTrackList } from '../lib/playlist-parser';
+import { useSearchHistory, useKeyboardShortcuts, shortcutPresets } from '../hooks';
+import { captureError } from '../lib/error-tracking';
 import { UI } from '../lib/constants';
 
+const PLATFORM_NAMES: Record<string, string> = {
+  'youtube': 'YouTube',
+  'soundcloud': 'SoundCloud',
+  'spotify': 'Spotify',
+  'deezer': 'Deezer',
+  'apple-music': 'Apple Music',
+  'bandcamp': 'Bandcamp',
+  'tidal': 'Tidal',
+  'amazon-music': 'Amazon Music',
+  'mixcloud': 'Mixcloud',
+  'beatport': 'Beatport',
+  'text': 'Text Import',
+};
+
+/** Props for the main search application component */
 interface SearchAppProps {
+  /** Initial search query to populate on mount */
   initialQuery?: string;
 }
 
+/** Represents a recent user action for the activity feed */
 interface RecentAction {
+  /** The track that was acted upon */
   track: SpotifyTrack;
+  /** Type of action performed */
   action: 'liked' | 'added_to_playlist';
+  /** Name of playlist if action was adding to playlist */
   playlistName?: string;
+  /** When the action occurred */
   timestamp: Date;
+}
+
+/** Result summary from importing an external playlist */
+interface PlaylistImportResult {
+  /** Source platform (youtube, soundcloud, etc.) */
+  platform: string;
+  /** Import statistics */
+  summary: {
+    total: number;
+    found: number;
+    notFound: number;
+  };
+}
+
+/** Individual track result from playlist import */
+interface ImportedTrackResult {
+  /** Whether the track was found on Spotify */
+  status: 'found' | 'not_found';
+  /** Matched Spotify track, null if not found */
+  spotifyTrack: TrackWithLiked | null;
+  /** Original track title from source platform */
+  originalTitle: string;
+  /** Original artist name from source platform */
+  originalArtist?: string;
 }
 
 export default function SearchApp({ initialQuery }: SearchAppProps) {
@@ -34,25 +80,20 @@ export default function SearchApp({ initialQuery }: SearchAppProps) {
   const [urlImportSource, setUrlImportSource] = useState<string | null>(null);
   const [spotifyCurrentTrack, setSpotifyCurrentTrack] = useState<SpotifyTrack | null>(null);
   const [announcement, setAnnouncement] = useState<string>('');
+  const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
+  const [playlistImport, setPlaylistImport] = useState<PlaylistImportResult | null>(null);
+  const [hasActiveSession, setHasActiveSession] = useState(false);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
 
-  // Helper to announce messages to screen readers
-  const announce = (message: string) => {
+  /** Announces messages to screen readers */
+  const announce = (message: string): void => {
     setAnnouncement('');
     // Small delay to ensure the announcement is read
     setTimeout(() => setAnnouncement(message), 100);
   };
 
-  // Use custom hooks for search history and audio player (DRY principle)
+  // Use custom hooks for search history (DRY principle)
   const { history: searchHistory, addToHistory, clearHistory: clearSearchHistory } = useSearchHistory();
-  const {
-    playingTrackId,
-    playingTrack,
-    isPlaying,
-    toggle: toggleAudio,
-    stop: stopAudio,
-    audioRef,
-  } = useAudioPlayer();
 
   const handleLikeToggle = useCallback(async (trackId: string, shouldLike: boolean) => {
     const method = shouldLike ? 'POST' : 'DELETE';
@@ -75,38 +116,73 @@ export default function SearchApp({ initialQuery }: SearchAppProps) {
     );
 
     // Add to recent actions and announce to screen readers
-    const likedTrack = tracks.find((t) => t.id === trackId);
-    if (likedTrack) {
-      if (shouldLike) {
-        setRecentActions((prev) => [
-          { track: likedTrack, action: 'liked', timestamp: new Date() },
-          ...prev.slice(0, UI.MAX_RECENT_ACTIONS - 1),
-        ]);
-        announce(`${likedTrack.name} saved to Liked Songs`);
-      } else {
-        announce(`${likedTrack.name} removed from Liked Songs`);
+    // Use setTracks callback to access current tracks without stale closure
+    setTracks((currentTracks) => {
+      const likedTrack = currentTracks.find((t) => t.id === trackId);
+      if (likedTrack) {
+        if (shouldLike) {
+          setRecentActions((prev) => [
+            { track: likedTrack, action: 'liked', timestamp: new Date() },
+            ...prev.slice(0, UI.MAX_RECENT_ACTIONS - 1),
+          ]);
+          announce(`${likedTrack.name} saved to Liked Songs`);
+        } else {
+          announce(`${likedTrack.name} removed from Liked Songs`);
+        }
       }
-    }
-  }, [tracks]);
+      return currentTracks;
+    });
+  }, []);
 
   const handleSearch = useCallback(async (query: string) => {
-    // Stop any playing audio when searching
-    stopAudio();
-
     setShowHistory(false);
     setIsLoading(true);
     setError(null);
     setHasSearched(true);
     setUrlImportSource(null);
+    setSearchSuggestions([]);
+    setPlaylistImport(null);
 
-    // Check if query is a URL
+    // Check if query is a text track list (multi-line or "Artist - Title" format)
+    const isTextList = isTextTrackList(query);
+
+    // Check if query is a playlist URL first
+    const playlistParsed = parsePlaylistUrl(query);
+
+    // Check if query is a track URL
     const urlParsed = parseTrackUrl(query);
 
     try {
       let data;
 
-      if (urlParsed) {
-        // Handle URL import
+      if (isTextList || playlistParsed) {
+        // Handle playlist import
+        const response = await fetch('/api/import-playlist', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: query }),
+        });
+        data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Playlist import failed');
+        }
+
+        // Extract found tracks
+        const foundTracks = (data.tracks as ImportedTrackResult[])
+          .filter((t) => t.status === 'found' && t.spotifyTrack !== null)
+          .map((t) => t.spotifyTrack as TrackWithLiked);
+
+        setTracks(foundTracks);
+        setUrlImportSource(data.platform);
+        setPlaylistImport({
+          platform: data.platform,
+          summary: data.summary,
+        });
+
+        announce(`Imported playlist: ${data.summary.found} of ${data.summary.total} tracks found`);
+      } else if (urlParsed) {
+        // Handle single track URL import
         const response = await fetch('/api/import-url', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -123,6 +199,15 @@ export default function SearchApp({ initialQuery }: SearchAppProps) {
           // Add the extracted search query to history instead of the URL
           addToHistory(data.searchQuery);
         }
+        setTracks(data.tracks);
+        // Announce results to screen readers
+        if (data.tracks.length === 0) {
+          announce('No tracks found');
+        } else if (data.tracks.length === 1) {
+          announce('Found 1 track');
+        } else {
+          announce(`Found ${data.tracks.length} tracks`);
+        }
       } else {
         // Regular search
         addToHistory(query);
@@ -133,26 +218,36 @@ export default function SearchApp({ initialQuery }: SearchAppProps) {
         if (!response.ok) {
           throw new Error(data.error || 'Search failed');
         }
-      }
 
-      setTracks(data.tracks);
-      // Announce results to screen readers
-      if (data.tracks.length === 0) {
-        announce('No tracks found');
-      } else if (data.tracks.length === 1) {
-        announce('Found 1 track');
-      } else {
-        announce(`Found ${data.tracks.length} tracks`);
+        setTracks(data.tracks);
+        // Store search suggestions if available
+        if (data.suggestions && data.suggestions.length > 0) {
+          setSearchSuggestions(data.suggestions);
+        }
+        // Announce results to screen readers
+        if (data.tracks.length === 0) {
+          announce('No tracks found');
+        } else if (data.tracks.length === 1) {
+          announce('Found 1 track');
+        } else {
+          announce(`Found ${data.tracks.length} tracks`);
+        }
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Search failed';
-      setError(errorMessage);
+      const error = err instanceof Error ? err : new Error(String(err));
+      captureError(error, {
+        action: 'search',
+        query: query.substring(0, 100), // Truncate for privacy
+        isPlaylistImport: isTextList || !!playlistParsed,
+        isUrlImport: !!urlParsed,
+      });
+      setError(error.message || 'Search failed');
       setTracks([]);
-      announce(`Error: ${errorMessage}`);
+      announce(`Error: ${error.message || 'Search failed'}`);
     } finally {
       setIsLoading(false);
     }
-  }, [stopAudio, addToHistory]);
+  }, [addToHistory]);
 
   // Handle initial query from URL params (e.g., from browser extension)
   const initialQueryProcessed = useRef(false);
@@ -163,6 +258,83 @@ export default function SearchApp({ initialQuery }: SearchAppProps) {
     }
   }, [initialQuery, handleSearch]);
 
+  // Check for active Spotify playback session
+  useEffect(() => {
+    const checkPlaybackState = async (): Promise<void> => {
+      try {
+        const response = await fetch('/api/player/state');
+        if (response.ok) {
+          const data = await response.json();
+          setHasActiveSession(data.hasActiveSession);
+        }
+      } catch (err) {
+        // Only track non-network errors (network errors are expected when offline)
+        if (err instanceof Error && !err.message.includes('fetch')) {
+          captureError(err, { action: 'check_playback_state' });
+        }
+        setHasActiveSession(false);
+      }
+    };
+
+    // Check immediately and then every 30 seconds
+    checkPlaybackState();
+    const interval = setInterval(checkPlaybackState, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Handlers for Spotify playback actions
+  const handleAddToQueue = useCallback(async (track: SpotifyTrack): Promise<void> => {
+    const response = await fetch('/api/player/queue', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ trackUri: track.uri }),
+    });
+
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.error || 'Failed to add to queue');
+    }
+
+    announce(`Added ${track.name} to queue`);
+  }, []);
+
+  const handlePlayNow = useCallback(async (track: SpotifyTrack): Promise<void> => {
+    const response = await fetch('/api/player/play', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ trackUri: track.uri }),
+    });
+
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.error || 'Failed to play track');
+    }
+
+    announce(`Now playing ${track.name}`);
+  }, []);
+
+  const handleLikeAll = useCallback(async (trackIds: string[]): Promise<void> => {
+    const response = await fetch('/api/like/bulk', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ trackIds }),
+    });
+
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.error || 'Failed to like tracks');
+    }
+
+    // Update local state to mark all tracks as liked
+    setTracks((prev) =>
+      prev.map((track) =>
+        trackIds.includes(track.id) ? { ...track, isLiked: true } : track
+      )
+    );
+
+    announce(`Liked ${trackIds.length} tracks`);
+  }, []);
+
 // Use keyboard shortcuts hook (DRY principle - replaces manual keydown handler)
   useKeyboardShortcuts([
     shortcutPresets.focusSearch(() => searchInputRef.current?.focus()),
@@ -172,17 +344,7 @@ export default function SearchApp({ initialQuery }: SearchAppProps) {
       if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
         target.blur();
       }
-      stopAudio();
       setShowHistory(false);
-    }),
-    shortcutPresets.playPause(() => {
-      if (playingTrack && audioRef.current) {
-        if (isPlaying) {
-          audioRef.current.pause();
-        } else {
-          audioRef.current.play();
-        }
-      }
     }),
     shortcutPresets.like(() => {
       if (tracks.length > 0 && !tracks[0].isLiked) {
@@ -195,16 +357,6 @@ export default function SearchApp({ initialQuery }: SearchAppProps) {
       }
     }),
   ]);
-
-  const handlePlayPause = useCallback(() => {
-    if (!audioRef.current) return;
-
-    if (isPlaying) {
-      audioRef.current.pause();
-    } else {
-      audioRef.current.play();
-    }
-  }, [isPlaying, audioRef]);
 
   const handleAddToPlaylist = useCallback(async (playlistId: string, trackUri: string, playlistName?: string) => {
     const response = await fetch('/api/playlist/add', {
@@ -248,6 +400,7 @@ export default function SearchApp({ initialQuery }: SearchAppProps) {
           inputRef={searchInputRef}
           onFocus={() => setShowHistory(true)}
           onBlur={() => setTimeout(() => setShowHistory(false), 200)}
+          initialValue={initialQuery}
         />
 
         {/* Search History Dropdown */}
@@ -301,26 +454,56 @@ export default function SearchApp({ initialQuery }: SearchAppProps) {
         </div>
       )}
 
-      {/* URL Import indicator */}
-      {urlImportSource && !error && (
+      {/* Playlist Import indicator */}
+      {playlistImport && !error && (
+        <div className="bg-spotify-green/10 border border-spotify-green/20 rounded-lg p-4">
+          <div className="flex items-center gap-2 text-sm">
+            <svg className="w-5 h-5 text-spotify-green" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M15 6H3v2h12V6zm0 4H3v2h12v-2zM3 16h8v-2H3v2zM17 6v8.18c-.31-.11-.65-.18-1-.18-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3V8h3V6h-5z" />
+            </svg>
+            <span className="font-medium text-white">
+              Playlist imported from {PLATFORM_NAMES[playlistImport.platform] || playlistImport.platform}
+            </span>
+          </div>
+          <div className="mt-2 flex items-center gap-4 text-sm text-spotify-lightgray">
+            <span className="flex items-center gap-1">
+              <span className="text-spotify-green font-medium">{playlistImport.summary.found}</span> found
+            </span>
+            {playlistImport.summary.notFound > 0 && (
+              <span className="flex items-center gap-1">
+                <span className="text-amber-400 font-medium">{playlistImport.summary.notFound}</span> not found
+              </span>
+            )}
+            <span className="text-spotify-lightgray/60">
+              ({playlistImport.summary.total} total)
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* URL Import indicator (single track) */}
+      {urlImportSource && !playlistImport && !error && (
         <div className="flex items-center justify-center gap-2 text-sm text-spotify-lightgray">
           <svg className="w-4 h-4 text-spotify-green" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
           </svg>
-          <span>
-            Imported from{" "}
-            {urlImportSource === 'youtube'
-              ? 'YouTube'
-              : urlImportSource === 'soundcloud'
-                ? 'SoundCloud'
-                : urlImportSource === 'deezer'
-                  ? 'Deezer'
-                  : urlImportSource === 'apple-music'
-                    ? 'Apple Music'
-                    : urlImportSource === 'bandcamp'
-                      ? 'Bandcamp'
-                      : 'Spotify'}
-          </span>
+          <span>Imported from {PLATFORM_NAMES[urlImportSource] || urlImportSource}</span>
+        </div>
+      )}
+
+      {/* Search suggestions ("Did you mean?") */}
+      {searchSuggestions.length > 0 && !isLoading && (
+        <div className="flex flex-wrap items-center justify-center gap-2 text-sm">
+          <span className="text-spotify-lightgray">Try:</span>
+          {searchSuggestions.map((suggestion, index) => (
+            <button
+              key={index}
+              onClick={() => handleSearch(suggestion)}
+              className="px-3 py-1 rounded-full bg-spotify-gray/30 text-white hover:bg-spotify-green/20 hover:text-spotify-green transition-colors border border-white/10"
+            >
+              {suggestion}
+            </button>
+          ))}
         </div>
       )}
 
@@ -341,8 +524,10 @@ export default function SearchApp({ initialQuery }: SearchAppProps) {
                   tracks={tracks}
                   onLikeToggle={handleLikeToggle}
                   onAddToPlaylist={setSelectedTrack}
-                  playingTrackId={playingTrackId}
-                  onPlayToggle={toggleAudio}
+                  hasActiveSession={hasActiveSession}
+                  onAddToQueue={handleAddToQueue}
+                  onPlayNow={handlePlayNow}
+                  onLikeAll={handleLikeAll}
                 />
               )}
 
@@ -388,15 +573,6 @@ export default function SearchApp({ initialQuery }: SearchAppProps) {
           onAdd={handleAddToPlaylist}
         />
       )}
-
-      {/* Now Playing Bar */}
-      <NowPlayingBar
-        track={playingTrack}
-        isPlaying={isPlaying}
-        onPlayPause={handlePlayPause}
-        onStop={stopAudio}
-        audioRef={audioRef}
-      />
     </div>
   );
 }

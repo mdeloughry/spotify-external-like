@@ -10,6 +10,7 @@ const SCOPES = [
   'playlist-modify-public',
   'playlist-modify-private',
   'user-read-playback-state',
+  'user-modify-playback-state',
   'user-read-currently-playing',
 ].join(' ');
 
@@ -21,7 +22,7 @@ export interface TokenResponse {
   scope: string;
 }
 
-export function getAuthUrl(state: string): string {
+export function getAuthUrl(state: string, forceConsent = false): string {
   const clientId = import.meta.env.SPOTIFY_CLIENT_ID;
   const redirectUri = import.meta.env.SPOTIFY_REDIRECT_URI;
 
@@ -32,6 +33,11 @@ export function getAuthUrl(state: string): string {
     redirect_uri: redirectUri,
     state: state,
   });
+
+  // Force consent screen to show new scopes for returning users
+  if (forceConsent) {
+    params.set('show_dialog', 'true');
+  }
 
   return `${SPOTIFY_AUTH_URL}?${params}`;
 }

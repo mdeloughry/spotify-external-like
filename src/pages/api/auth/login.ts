@@ -5,7 +5,8 @@ import { COOKIES } from '../../../lib/constants';
 
 export const GET: APIRoute = async () => {
   const state = generateState();
-  const authUrl = getAuthUrl(state);
+  // Force consent dialog to ensure users authorize new scopes (e.g., playback control)
+  const authUrl = getAuthUrl(state, true);
 
   return new Response(null, {
     status: 302,

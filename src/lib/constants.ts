@@ -68,9 +68,6 @@ export const UI = {
   /** Number of clicks to trigger easter egg */
   EASTER_EGG_CLICK_COUNT: 3,
 
-  /** Default audio volume for previews (0-1) */
-  DEFAULT_AUDIO_VOLUME: 0.5,
-
   /** Maximum number of suggestions to display in main suggestions grid */
   MAX_SUGGESTIONS_GRID: 5,
 
@@ -129,7 +126,7 @@ export const COOKIES = {
   AUTH_STATE_MAX_AGE: 10 * 60, // 10 minutes
 
   /** Refresh token expiry in seconds */
-  REFRESH_TOKEN_MAX_AGE: 60 * 60 * 24 * 30, // 30 days
+  REFRESH_TOKEN_MAX_AGE: 60 * 60 * 24 * 14, // 14 days
 } as const;
 
 // =============================================================================

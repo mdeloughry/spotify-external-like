@@ -16,24 +16,22 @@ export default function CookieBanner() {
     }
   }, []);
 
-  const handleAccept = () => {
+  const handleAccept = (): void => {
     localStorage.setItem(CHOICE_KEY, 'true');
     localStorage.removeItem(OPTOUT_KEY);
     setVisible(false);
     // Reload to initialize analytics if they weren't loaded
-    if (!(window as any).posthog) {
+    if (!window.posthog) {
       window.location.reload();
     }
   };
 
-  const handleDecline = () => {
+  const handleDecline = (): void => {
     localStorage.setItem(CHOICE_KEY, 'true');
     localStorage.setItem(OPTOUT_KEY, 'true');
     setVisible(false);
     // If PostHog is loaded, opt out
-    if ((window as any).posthog) {
-      (window as any).posthog.opt_out_capturing();
-    }
+    window.posthog?.opt_out_capturing();
   };
 
   if (!visible) return null;
@@ -59,7 +57,7 @@ export default function CookieBanner() {
                 <p id="cookie-banner-title" className="text-white font-semibold">Help us improve Spillover</p>
               </div>
               <p id="cookie-banner-description" className="text-gray-300 text-sm">
-                We use anonymous analytics to understand how the app is used. No personal data, no IP tracking.{' '}
+                We use anonymous analytics and error tracking to improve the app. No personal data, no IP tracking.{' '}
                 <a href="/privacy" className="text-purple-300 hover:text-purple-200 underline underline-offset-2">Privacy Policy</a>
               </p>
             </div>

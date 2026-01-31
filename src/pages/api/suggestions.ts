@@ -1,6 +1,7 @@
 import { getTrackById, getArtistTopTracks, getRelatedArtists, checkSavedTracks } from '../../lib/spotify';
 import { withApiHandler, errorResponse } from '../../lib/api-utils';
 import { RATE_LIMIT, API_PATHS, VALIDATION, UI } from '../../lib/constants';
+import type { SpotifyTrack } from '../../lib/spotify';
 
 export const GET = withApiHandler(
   async ({ context, token, headers, logger }) => {
@@ -18,57 +19,68 @@ export const GET = withApiHandler(
       return errorResponse('Invalid track ID format', 400);
     }
 
-    // Get the seed tracks to find their artists
+    // Get seed tracks to extract artist IDs
     const seedTracks = await Promise.all(
-      trackIds.slice(0, UI.MAX_SEED_TRACKS).map((id) => getTrackById(id, token).catch(() => null))
+      trackIds.slice(0, 5).map((id) => getTrackById(id, token).catch(() => null))
     );
 
-    const validTracks = seedTracks.filter(Boolean);
+    const validTracks = seedTracks.filter((t): t is SpotifyTrack => t !== null);
     if (validTracks.length === 0) {
       logger.info(200);
       return new Response(JSON.stringify({ tracks: [] }), { headers });
     }
 
     // Collect unique artist IDs from seed tracks
-    const artistIds = new Set<string>();
-    validTracks.forEach((track) => {
-      track!.artists.forEach((artist) => artistIds.add(artist.id));
-    });
-
-    // Get top tracks from the first artist and related artists
-    const firstArtistId = Array.from(artistIds)[0];
-
-    const [topTracksResponse, relatedArtistsResponse] = await Promise.all([
-      getArtistTopTracks(firstArtistId, token),
-      getRelatedArtists(firstArtistId, token).catch(() => ({ artists: [] })),
-    ]);
-
-    let suggestedTracks = [...topTracksResponse.tracks];
-
-    // Add tracks from a related artist if we have them
-    if (relatedArtistsResponse.artists.length > 0) {
-      const relatedArtist = relatedArtistsResponse.artists[0];
-      try {
-        const relatedTracks = await getArtistTopTracks(relatedArtist.id, token);
-        suggestedTracks = [...suggestedTracks, ...relatedTracks.tracks];
-      } catch {
-        // Ignore errors from related artist tracks
+    const artistIds: string[] = [];
+    for (const track of validTracks) {
+      if (track.artists[0] && !artistIds.includes(track.artists[0].id)) {
+        artistIds.push(track.artists[0].id);
+        if (artistIds.length >= 2) break;
       }
     }
 
-    // Remove duplicates and seed tracks
-    const seedTrackIds = new Set(trackIds);
-    const seenIds = new Set<string>();
-    const uniqueTracks = suggestedTracks.filter((track) => {
-      if (seedTrackIds.has(track.id) || seenIds.has(track.id)) {
-        return false;
+    let suggestedTracks: SpotifyTrack[] = [];
+
+    // Note: Spotify deprecated /recommendations API on Nov 27, 2024
+    // Using artist top tracks and related artists instead
+    if (artistIds.length > 0) {
+      try {
+        // Get top tracks from the primary artist
+        const topTracks = await getArtistTopTracks(artistIds[0], token);
+        suggestedTracks = topTracks.tracks || [];
+
+        // If we have room for more suggestions, get top tracks from related artists
+        if (suggestedTracks.length < UI.MAX_SUGGESTIONS_API) {
+          try {
+            const relatedArtists = await getRelatedArtists(artistIds[0], token);
+            if (relatedArtists.artists.length > 0) {
+              // Get top tracks from first related artist
+              const relatedTopTracks = await getArtistTopTracks(
+                relatedArtists.artists[0].id,
+                token
+              );
+              suggestedTracks = [
+                ...suggestedTracks,
+                ...(relatedTopTracks.tracks || []),
+              ];
+            }
+          } catch {
+            // Silently fail related artists lookup
+          }
+        }
+      } catch {
+        // Silently fail
       }
-      seenIds.add(track.id);
-      return true;
-    });
+    }
+
+    // Remove seed tracks from results
+    const seedTrackIds = new Set(trackIds);
+    const filteredTracks = suggestedTracks.filter(
+      (track) => !seedTrackIds.has(track.id)
+    );
 
     // Limit results
-    const finalTracks = uniqueTracks.slice(0, UI.MAX_SUGGESTIONS_API);
+    const finalTracks = filteredTracks.slice(0, UI.MAX_SUGGESTIONS_API);
 
     // Check which tracks are already liked
     const recTrackIds = finalTracks.map((track) => track.id);

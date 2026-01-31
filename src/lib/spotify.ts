@@ -75,18 +75,35 @@ async function spotifyFetch<T>(
     },
   });
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.error?.message || `Spotify API error: ${response.status}`);
-  }
-
   // Some endpoints return 200/204 with no content
   const text = await response.text();
+
+  if (!response.ok) {
+    // Try to parse error as JSON, but handle non-JSON responses
+    let errorMessage = `Spotify API error: ${response.status}`;
+    if (text) {
+      try {
+        const error = JSON.parse(text);
+        errorMessage = error.error?.message || errorMessage;
+      } catch {
+        // Response is not JSON, use status text
+        errorMessage = `Spotify API error: ${response.status} ${response.statusText}`;
+      }
+    }
+    throw new Error(errorMessage);
+  }
+
   if (!text) {
     return {} as T;
   }
 
-  return JSON.parse(text);
+  try {
+    return JSON.parse(text);
+  } catch {
+    // If response is OK but not valid JSON, return empty object
+    // This can happen with some Spotify endpoints that return non-JSON success responses
+    return {} as T;
+  }
 }
 
 export async function searchTracks(
@@ -107,6 +124,28 @@ export async function saveTrack(trackId: string, token: string): Promise<void> {
     method: 'PUT',
     body: JSON.stringify({ ids: [trackId] }),
   });
+}
+
+/**
+ * Save multiple tracks to Liked Songs (max 50 at a time)
+ * @param trackIds - Array of track IDs to save
+ * @param token - The access token
+ */
+export async function saveTracks(trackIds: string[], token: string): Promise<void> {
+  // Spotify API allows max 50 IDs per request
+  const chunks: string[][] = [];
+  for (let i = 0; i < trackIds.length; i += 50) {
+    chunks.push(trackIds.slice(i, i + 50));
+  }
+
+  await Promise.all(
+    chunks.map(chunk =>
+      spotifyFetch<void>('/me/tracks', token, {
+        method: 'PUT',
+        body: JSON.stringify({ ids: chunk }),
+      })
+    )
+  );
 }
 
 export async function removeTrack(trackId: string, token: string): Promise<void> {
@@ -218,6 +257,53 @@ export async function getRelatedArtists(
   return spotifyFetch<RelatedArtistsResponse>(`/artists/${artistId}/related-artists`, token);
 }
 
+/** Response from Spotify recommendations endpoint */
+export interface RecommendationsResponse {
+  /** Recommended tracks */
+  tracks: SpotifyTrack[];
+  /** Seeds used for recommendations */
+  seeds: Array<{
+    id: string;
+    type: 'track' | 'artist' | 'genre';
+    initialPoolSize: number;
+    afterFilteringSize: number;
+    afterRelinkingSize: number;
+  }>;
+}
+
+/**
+ * Get track recommendations based on seed tracks, artists, or genres
+ * Up to 5 seed values total across all types
+ * @param options - Recommendation options
+ * @param token - The access token
+ */
+export async function getRecommendations(
+  options: {
+    seedTracks?: string[];
+    seedArtists?: string[];
+    seedGenres?: string[];
+    limit?: number;
+    market?: string;
+  },
+  token: string
+): Promise<RecommendationsResponse> {
+  const params = new URLSearchParams();
+
+  if (options.seedTracks?.length) {
+    params.set('seed_tracks', options.seedTracks.slice(0, 5).join(','));
+  }
+  if (options.seedArtists?.length) {
+    params.set('seed_artists', options.seedArtists.slice(0, 5).join(','));
+  }
+  if (options.seedGenres?.length) {
+    params.set('seed_genres', options.seedGenres.slice(0, 5).join(','));
+  }
+  params.set('limit', (options.limit || 20).toString());
+  params.set('market', options.market || 'US');
+
+  return spotifyFetch<RecommendationsResponse>(`/recommendations?${params}`, token);
+}
+
 export async function getTrackById(trackId: string, token: string): Promise<SpotifyTrack> {
   return spotifyFetch<SpotifyTrack>(`/tracks/${trackId}`, token);
 }
@@ -244,6 +330,54 @@ export interface CurrentlyPlaying {
   currently_playing_type: 'track' | 'episode' | 'ad' | 'unknown';
 }
 
+export interface PlaylistTracksResponse {
+  items: Array<{
+    track: SpotifyTrack | null;
+    added_at: string;
+  }>;
+  total: number;
+  limit: number;
+  offset: number;
+  next: string | null;
+}
+
+/**
+ * Get tracks from a playlist
+ * @param playlistId - The Spotify playlist ID
+ * @param token - The access token
+ * @param limit - Max tracks to fetch (default 100)
+ */
+export async function getPlaylistTracks(
+  playlistId: string,
+  token: string,
+  limit = 100
+): Promise<PlaylistTracksResponse> {
+  const params = new URLSearchParams({
+    limit: Math.min(limit, 100).toString(),
+    fields: 'items(track(id)),total,limit,offset,next',
+  });
+  return spotifyFetch<PlaylistTracksResponse>(`/playlists/${playlistId}/tracks?${params}`, token);
+}
+
+/**
+ * Check if a track exists in a playlist
+ * @param playlistId - The Spotify playlist ID
+ * @param trackId - The track ID to check
+ * @param token - The access token
+ * @returns true if the track is in the playlist
+ */
+export async function isTrackInPlaylist(
+  playlistId: string,
+  trackId: string,
+  token: string
+): Promise<boolean> {
+  // Fetch first 100 tracks and check
+  // For very large playlists, this might miss tracks beyond 100
+  // but it's a reasonable trade-off for performance
+  const response = await getPlaylistTracks(playlistId, token, 100);
+  return response.items.some(item => item.track?.id === trackId);
+}
+
 export async function getCurrentlyPlaying(token: string): Promise<CurrentlyPlaying | null> {
   try {
     const response = await fetch(`${SPOTIFY_API_BASE}/me/player/currently-playing`, {
@@ -265,4 +399,87 @@ export async function getCurrentlyPlaying(token: string): Promise<CurrentlyPlayi
   } catch {
     return null;
   }
+}
+
+/** Playback state response from Spotify */
+export interface PlaybackState {
+  /** The device currently playing */
+  device: {
+    id: string;
+    name: string;
+    type: string;
+    is_active: boolean;
+    is_restricted: boolean;
+    volume_percent: number;
+  } | null;
+  /** Whether playback is active */
+  is_playing: boolean;
+  /** Currently playing track */
+  item: SpotifyTrack | null;
+  /** Playback progress in ms */
+  progress_ms: number | null;
+  /** Shuffle state */
+  shuffle_state: boolean;
+  /** Repeat state */
+  repeat_state: 'off' | 'track' | 'context';
+}
+
+/**
+ * Get current playback state including active device
+ * @param token - The access token
+ * @returns Playback state or null if no active session
+ */
+export async function getPlaybackState(token: string): Promise<PlaybackState | null> {
+  try {
+    const response = await fetch(`${SPOTIFY_API_BASE}/me/player`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    // 204 means no active device
+    if (response.status === 204) {
+      return null;
+    }
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return response.json();
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Add a track to the user's playback queue
+ * Requires an active playback session
+ * @param trackUri - The Spotify track URI (spotify:track:xxx)
+ * @param token - The access token
+ */
+export async function addToQueue(trackUri: string, token: string): Promise<void> {
+  const params = new URLSearchParams({ uri: trackUri });
+  await spotifyFetch<void>(`/me/player/queue?${params}`, token, {
+    method: 'POST',
+  });
+}
+
+/**
+ * Start playing a track immediately
+ * Requires an active playback session
+ * @param trackUri - The Spotify track URI (spotify:track:xxx)
+ * @param token - The access token
+ * @param deviceId - Optional device ID to play on
+ */
+export async function playTrack(
+  trackUri: string,
+  token: string,
+  deviceId?: string
+): Promise<void> {
+  const params = deviceId ? new URLSearchParams({ device_id: deviceId }) : '';
+  await spotifyFetch<void>(`/me/player/play${params ? `?${params}` : ''}`, token, {
+    method: 'PUT',
+    body: JSON.stringify({ uris: [trackUri] }),
+  });
 }

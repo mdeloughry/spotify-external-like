@@ -1,6 +1,6 @@
 import { searchTracks, checkSavedTracks, getTrackById } from '../../lib/spotify';
 import { parseTrackUrl } from '../../lib/url-parser';
-import { withBodyApiHandler, validateUrl, errorResponse } from '../../lib/api-utils';
+import { withBodyApiHandler, validateExternalUrl, errorResponse } from '../../lib/api-utils';
 import { RATE_LIMIT, API_PATHS, TIMEOUTS } from '../../lib/constants';
 
 interface ImportUrlRequestBody {
@@ -58,8 +58,22 @@ async function getPageTitle(targetUrl: string): Promise<string | null> {
       .replace(/\s*-\s*Deezer\s*$/i, '')
       // Bandcamp: "Track | Artist" or "Album | Artist"
       .replace(/\s*\|\s*Bandcamp\s*$/i, '')
+      // Tidal: "Track - Artist | Tidal" or "Track by Artist | Tidal"
+      .replace(/\s*\|\s*Tidal\s*$/i, '')
+      .replace(/\s*-\s*Tidal\s*$/i, '')
+      // Amazon Music: "Track by Artist on Amazon Music"
+      .replace(/\s+on\s+Amazon Music\s*$/i, '')
+      .replace(/\s*-\s*Amazon Music\s*$/i, '')
+      .replace(/\s*\|\s*Amazon Music\s*$/i, '')
+      // Mixcloud: "Show Name by Artist | Mixcloud"
+      .replace(/\s*\|\s*Mixcloud\s*$/i, '')
+      .replace(/\s*-\s*Mixcloud\s*$/i, '')
+      // Beatport: "Track Name by Artist on Beatport"
+      .replace(/\s+on\s+Beatport\s*$/i, '')
+      .replace(/\s*-\s*Beatport\s*$/i, '')
+      .replace(/\s*\|\s*Beatport\s*$/i, '')
       // Remove site names in brackets
-      .replace(/\s*\(.*?(Deezer|Apple Music|Bandcamp).*?\)\s*$/i, '')
+      .replace(/\s*\(.*?(Deezer|Apple Music|Bandcamp|Tidal|Amazon|Mixcloud|Beatport).*?\)\s*$/i, '')
       .trim();
 
     return title || null;
@@ -72,8 +86,8 @@ export const POST = withBodyApiHandler<ImportUrlRequestBody>(
   async ({ token, headers, logger, body }) => {
     const { url } = body;
 
-    // Validation
-    const urlValidation = validateUrl(url);
+    // Validation with SSRF protection
+    const urlValidation = validateExternalUrl(url);
     if (!urlValidation.valid) {
       logger.info(400);
       return errorResponse(urlValidation.error!, 400);

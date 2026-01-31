@@ -1,14 +1,22 @@
 import type { SpotifyTrack } from '../lib/spotify';
 
+/** Represents a recent user action */
 interface RecentAction {
+  /** The track that was acted upon */
   track: SpotifyTrack;
+  /** Type of action performed */
   action: 'liked' | 'added_to_playlist';
+  /** Name of playlist if action was adding to playlist */
   playlistName?: string;
+  /** When the action occurred */
   timestamp: Date;
 }
 
+/** Props for the recent activity sidebar component */
 interface RecentActivityProps {
+  /** List of recent user actions */
   actions: RecentAction[];
+  /** Callback to clear activity history */
   onClear: () => void;
 }
 

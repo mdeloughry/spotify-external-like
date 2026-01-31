@@ -11,6 +11,10 @@ declare global {
 
 /**
  * Capture an error to PostHog (if configured and user has opted in)
+ *
+ * Note: This respects the user's analytics opt-out preference automatically.
+ * When users opt out via the privacy settings, PostHog's opt_out_capturing()
+ * is called, which prevents all captures including error tracking.
  */
 export function captureError(error: Error | string, context?: Record<string, unknown>): void {
   try {
@@ -21,10 +25,14 @@ export function captureError(error: Error | string, context?: Record<string, unk
       });
     }
     // Always log to console in development
-    console.error('[Error]', error, context);
+    if (import.meta.env.DEV) {
+      console.error('[Error]', error, context);
+    }
   } catch {
     // Silently fail if PostHog is not available
-    console.error('[Error]', error, context);
+    if (import.meta.env.DEV) {
+      console.error('[Error]', error, context);
+    }
   }
 }
 

@@ -11,7 +11,7 @@ export default function AnalyticsOptOut() {
     setOptedOut(stored === 'true');
   }, []);
 
-  const handleToggle = () => {
+  const handleToggle = (): void => {
     const newValue = !optedOut;
     setOptedOut(newValue);
 
@@ -21,9 +21,7 @@ export default function AnalyticsOptOut() {
     if (newValue) {
       localStorage.setItem(OPTOUT_KEY, 'true');
       // If PostHog is loaded, opt out
-      if (typeof window !== 'undefined' && (window as any).posthog) {
-        (window as any).posthog.opt_out_capturing();
-      }
+      window.posthog?.opt_out_capturing();
     } else {
       localStorage.removeItem(OPTOUT_KEY);
       // Reload to re-initialize analytics
@@ -44,11 +42,11 @@ export default function AnalyticsOptOut() {
     <div className="bg-spotify-gray/10 rounded-lg p-4 border border-spotify-gray/20">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <p className="text-white font-medium text-sm">Anonymous Analytics</p>
+          <p className="text-white font-medium text-sm">Analytics & Error Tracking</p>
           <p className="text-spotify-lightgray text-xs mt-1">
             {optedOut
-              ? "Analytics are disabled. No data is being collected."
-              : "Help improve Spillover with anonymous usage data."}
+              ? "Analytics and error tracking are disabled. No data is being collected."
+              : "Help improve Spillover with anonymous usage data and error reports."}
           </p>
         </div>
         <button
@@ -58,7 +56,7 @@ export default function AnalyticsOptOut() {
           }`}
           role="switch"
           aria-checked={!optedOut}
-          aria-label="Toggle analytics"
+          aria-label="Toggle analytics and error tracking"
         >
           <span
             className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${

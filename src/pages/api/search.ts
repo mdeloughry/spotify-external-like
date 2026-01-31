@@ -1,6 +1,7 @@
 import { searchTracks, checkSavedTracks } from '../../lib/spotify';
 import { withApiHandler, validateSearchQuery, errorResponse } from '../../lib/api-utils';
 import { RATE_LIMIT, API_PATHS } from '../../lib/constants';
+import { generateSearchSuggestions, queryNeedsCleaning } from '../../lib/fuzzy-search';
 
 export const GET = withApiHandler(
   async ({ context, token, headers, logger }) => {
@@ -30,11 +31,18 @@ export const GET = withApiHandler(
       isLiked: likedStatus[index] || false,
     }));
 
+    // Generate search suggestions if few/no results or query looks like it needs cleaning
+    let suggestions: string[] = [];
+    if (tracksWithLiked.length < 3 || queryNeedsCleaning(query!)) {
+      suggestions = generateSearchSuggestions(query!);
+    }
+
     logger.info(200);
     return new Response(
       JSON.stringify({
         tracks: tracksWithLiked,
         total: searchResults.tracks.total,
+        suggestions,
       }),
       { headers }
     );

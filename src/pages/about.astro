@@ -1,0 +1,618 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout
+  title="How to Use - Spillover"
+  description="Learn how to use Spillover to save tracks from YouTube, SoundCloud, and other platforms directly to your Spotify library."
+  showBackLink={true}
+  backHref="/"
+  backLabel="Back to app"
+>
+  <!-- Main Content -->
+  <div class="flex-1">
+    <div class="max-w-3xl mx-auto px-4 py-12">
+      <h2 class="text-3xl font-bold mb-2">How to Use Spillover</h2>
+      <p class="text-spotify-lightgray mb-8">
+        Your guide to saving tracks from anywhere to Spotify
+      </p>
+
+      <div class="space-y-8 text-spotify-lightgray">
+        <!-- What is Spillover -->
+        <div
+          class="bg-spotify-green/10 border border-spotify-green/20 rounded-xl p-6"
+        >
+          <h3 class="text-white font-semibold mb-3 flex items-center gap-2">
+            <svg
+              class="w-5 h-5 text-spotify-green"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              ></path>
+            </svg>
+            What is Spillover?
+          </h3>
+          <p class="text-sm leading-relaxed">
+            Spillover is a privacy-first tool that helps you save tracks to your
+            Spotify library from any music source. Found a great song on
+            YouTube? Heard something on SoundCloud? Just paste the link or
+            search by title, and Spillover will find it on Spotify so you can
+            save it to your library or add it to a playlist.
+          </p>
+        </div>
+
+        <!-- Getting Started -->
+        <section>
+          <h3 class="text-white text-xl font-semibold mb-4">Getting Started</h3>
+          <div class="space-y-4">
+            <div
+              class="bg-spotify-gray/10 rounded-lg p-4 border border-spotify-gray/20"
+            >
+              <div class="flex items-start gap-4">
+                <div
+                  class="flex-shrink-0 w-8 h-8 rounded-full bg-spotify-green/20 flex items-center justify-center text-spotify-green font-bold text-sm"
+                >
+                  1
+                </div>
+                <div>
+                  <h4 class="text-white font-medium mb-1">
+                    Connect Your Spotify
+                  </h4>
+                  <p class="text-sm">
+                    Click "Connect with Spotify" to sign in. We only request the
+                    permissions needed to search tracks, manage your library,
+                    and access your playlists.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div
+              class="bg-spotify-gray/10 rounded-lg p-4 border border-spotify-gray/20"
+            >
+              <div class="flex items-start gap-4">
+                <div
+                  class="flex-shrink-0 w-8 h-8 rounded-full bg-spotify-green/20 flex items-center justify-center text-spotify-green font-bold text-sm"
+                >
+                  2
+                </div>
+                <div>
+                  <h4 class="text-white font-medium mb-1">
+                    Search or Paste a Link
+                  </h4>
+                  <p class="text-sm">
+                    Type a song title or artist name in the search bar, or paste
+                    a link from YouTube, SoundCloud, or other supported
+                    platforms.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div
+              class="bg-spotify-gray/10 rounded-lg p-4 border border-spotify-gray/20"
+            >
+              <div class="flex items-start gap-4">
+                <div
+                  class="flex-shrink-0 w-8 h-8 rounded-full bg-spotify-green/20 flex items-center justify-center text-spotify-green font-bold text-sm"
+                >
+                  3
+                </div>
+                <div>
+                  <h4 class="text-white font-medium mb-1">Save to Spotify</h4>
+                  <p class="text-sm">
+                    Click the heart icon to save a track to your Liked Songs, or
+                    use the menu to add it to one of your playlists.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Supported Platforms -->
+        <section>
+          <h3 class="text-white text-xl font-semibold mb-4">
+            Supported Platforms
+          </h3>
+          <p class="mb-4">
+            Paste links from any of these platforms and Spillover will extract
+            the track info and search Spotify for you:
+          </p>
+          <div class="grid gap-3 sm:grid-cols-2">
+            <div class="flex items-center gap-3 p-3 rounded-lg bg-spotify-gray/10 border border-spotify-gray/20">
+              <div class="w-8 h-8 rounded-lg bg-red-500/20 flex items-center justify-center">
+                <svg class="w-4 h-4 text-red-400" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"></path>
+                </svg>
+              </div>
+              <span class="text-white font-medium">YouTube & YouTube Music</span>
+            </div>
+            <div class="flex items-center gap-3 p-3 rounded-lg bg-spotify-gray/10 border border-spotify-gray/20">
+              <div class="w-8 h-8 rounded-lg bg-orange-500/20 flex items-center justify-center">
+                <svg class="w-4 h-4 text-orange-400" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M7 17.939h-1v-8.068c.308-.231.639-.429 1-.566v8.634zm3 0h1v-9.224c-.229.265-.443.548-.621.857l-.379-.184v8.551zm-2 0h1v-8.848c-.508-.079-.623-.05-1-.01v8.858zm-4 0h1v-7.02c-.312.458-.555.971-.692 1.535l-.308-.182v5.667zm-3-5.25c-.606.547-1 1.354-1 2.268 0 .914.394 1.721 1 2.268v-4.536zm18.879-.671c-.204-2.837-2.404-5.079-5.117-5.079-1.022 0-1.964.328-2.762.877v10.123h9.089c1.607 0 2.911-1.393 2.911-3.106 0-2.233-2.168-3.772-4.121-2.815zm-16.879-.027c-.302-.024-.526-.03-1 .122v5.689h1v-5.811z"/>
+                </svg>
+              </div>
+              <span class="text-white font-medium">SoundCloud</span>
+            </div>
+            <div class="flex items-center gap-3 p-3 rounded-lg bg-spotify-gray/10 border border-spotify-gray/20">
+              <div class="w-8 h-8 rounded-lg bg-pink-500/20 flex items-center justify-center">
+                <svg class="w-4 h-4 text-pink-400" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"></path>
+                </svg>
+              </div>
+              <span class="text-white font-medium">Spotify</span>
+            </div>
+            <div class="flex items-center gap-3 p-3 rounded-lg bg-spotify-gray/10 border border-spotify-gray/20">
+              <div class="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                <svg class="w-4 h-4 text-purple-400" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M18.81 4.16v3.03H24V4.16h-5.19zM6.27 8.38v3.027h5.189V8.38h-5.19zm12.54 0v3.027H24V8.38h-5.19zM6.27 12.594v3.027h5.189v-3.027h-5.19zm6.271 0v3.027h5.19v-3.027h-5.19zm6.27 0v3.027H24v-3.027h-5.19zM0 16.81v3.029h5.19v-3.03H0zm6.27 0v3.029h5.189v-3.03h-5.19zm6.271 0v3.029h5.19v-3.03h-5.19zm6.27 0v3.029H24v-3.03h-5.19z"/>
+                </svg>
+              </div>
+              <span class="text-white font-medium">Deezer</span>
+            </div>
+            <div class="flex items-center gap-3 p-3 rounded-lg bg-spotify-gray/10 border border-spotify-gray/20">
+              <div class="w-8 h-8 rounded-lg bg-rose-500/20 flex items-center justify-center">
+                <svg class="w-4 h-4 text-rose-400" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701"></path>
+                </svg>
+              </div>
+              <span class="text-white font-medium">Apple Music</span>
+            </div>
+            <div class="flex items-center gap-3 p-3 rounded-lg bg-spotify-gray/10 border border-spotify-gray/20">
+              <div class="w-8 h-8 rounded-lg bg-cyan-500/20 flex items-center justify-center">
+                <svg class="w-4 h-4 text-cyan-400" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M0 18.75l7.5-13.5h16.5l-7.5 13.5H0z"/>
+                </svg>
+              </div>
+              <span class="text-white font-medium">Bandcamp</span>
+            </div>
+            <div class="flex items-center gap-3 p-3 rounded-lg bg-spotify-gray/10 border border-spotify-gray/20">
+              <div class="w-8 h-8 rounded-lg bg-sky-500/20 flex items-center justify-center">
+                <svg class="w-4 h-4 text-sky-400" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12.012 3.992L8.008 7.996 4.004 3.992 0 7.996v8.008L12.012 4l11.988 12V7.996l-4.004-4.004-3.98 4.004z"/>
+                </svg>
+              </div>
+              <span class="text-white font-medium">Tidal</span>
+            </div>
+            <div class="flex items-center gap-3 p-3 rounded-lg bg-spotify-gray/10 border border-spotify-gray/20">
+              <div class="w-8 h-8 rounded-lg bg-teal-500/20 flex items-center justify-center">
+                <svg class="w-4 h-4 text-teal-400" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M17.422 11.268c-.376-.253-.844-.47-1.36-.622a10.634 10.634 0 0 0-.96-.214v-.002c-.183-.034-.37-.064-.562-.09l-.213-.028-.19-.022-.19-.02-.19-.016a17.457 17.457 0 0 0-.76-.05l-.19-.007-.19-.005-.19-.002h-.38l-.19.002-.19.005-.19.007c-.254.012-.507.028-.76.05l-.19.016-.19.02-.19.022-.213.028c-.192.026-.379.056-.562.09v.002c-.328.058-.649.13-.96.214-.516.152-.984.369-1.36.622-.376.253-.673.55-.873.878-.2.327-.303.682-.303 1.049v5.618c0 .734.393 1.403 1.032 1.855.639.452 1.503.706 2.404.706h5.618c.901 0 1.765-.254 2.404-.706.639-.452 1.032-1.121 1.032-1.855v-5.618c0-.367-.103-.722-.303-1.049-.2-.328-.497-.625-.873-.878zM12 2c-.901 0-1.765.254-2.404.706C8.957 3.158 8.564 3.827 8.564 4.561v3.843c.322-.063.65-.11.984-.143.336-.032.675-.049 1.016-.049h2.872c.341 0 .68.017 1.016.049.334.033.662.08.984.143V4.561c0-.734-.393-1.403-1.032-1.855C13.765 2.254 12.901 2 12 2z"/>
+                </svg>
+              </div>
+              <span class="text-white font-medium">Amazon Music</span>
+            </div>
+            <div class="flex items-center gap-3 p-3 rounded-lg bg-spotify-gray/10 border border-spotify-gray/20">
+              <div class="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center">
+                <svg class="w-4 h-4 text-indigo-400" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 0C5.372 0 0 5.372 0 12s5.372 12 12 12 12-5.372 12-12S18.628 0 12 0zm0 21.6c-5.292 0-9.6-4.308-9.6-9.6S6.708 2.4 12 2.4s9.6 4.308 9.6 9.6-4.308 9.6-9.6 9.6zm4.8-9.6c0 2.652-2.148 4.8-4.8 4.8S7.2 14.652 7.2 12 9.348 7.2 12 7.2s4.8 2.148 4.8 4.8z"/>
+                </svg>
+              </div>
+              <span class="text-white font-medium">Mixcloud</span>
+            </div>
+            <div class="flex items-center gap-3 p-3 rounded-lg bg-spotify-gray/10 border border-spotify-gray/20">
+              <div class="w-8 h-8 rounded-lg bg-lime-500/20 flex items-center justify-center">
+                <svg class="w-4 h-4 text-lime-400" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M21.503 4.117c-.667-.317-1.47-.117-1.944.483l-4.839 6.13-2.759-3.496a1.5 1.5 0 0 0-2.422.1L4.7 14.463a1.5 1.5 0 0 0 1.211 2.387h12.178a1.5 1.5 0 0 0 1.211-2.387l-2.173-2.974 5.32-6.428a1.5 1.5 0 0 0-.944-2.944z"/>
+                </svg>
+              </div>
+              <span class="text-white font-medium">Beatport</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Features -->
+        <section>
+          <h3 class="text-white text-xl font-semibold mb-4">Features</h3>
+          <div class="space-y-4">
+            <div class="flex items-start gap-3">
+              <div
+                class="w-8 h-8 bg-spotify-gray/30 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+              >
+                <svg
+                  class="w-4 h-4 text-spotify-green"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                  ></path>
+                </svg>
+              </div>
+              <div>
+                <span class="text-white font-medium">Like Tracks</span>
+                <p class="text-sm">
+                  Save tracks to your Liked Songs with a single click. The heart
+                  icon shows green when a track is already in your library.
+                </p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <div
+                class="w-8 h-8 bg-spotify-gray/30 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+              >
+                <svg
+                  class="w-4 h-4 text-spotify-green"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                  ></path>
+                </svg>
+              </div>
+              <div>
+                <span class="text-white font-medium">Add to Playlists</span>
+                <p class="text-sm">
+                  Click the playlist icon on any track to add it to one of your
+                  existing playlists. Quick and easy organization.
+                </p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <div
+                class="w-8 h-8 bg-spotify-gray/30 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+              >
+                <svg
+                  class="w-4 h-4 text-spotify-green"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"
+                  ></path>
+                </svg>
+              </div>
+              <div>
+                <span class="text-white font-medium">Now Playing</span>
+                <p class="text-sm">
+                  See what's currently playing on your Spotify and get track
+                  recommendations based on your listening.
+                </p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <div
+                class="w-8 h-8 bg-spotify-gray/30 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+              >
+                <svg
+                  class="w-4 h-4 text-spotify-green"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 6h16M4 10h16M4 14h10m-10 4h10"
+                  ></path>
+                </svg>
+              </div>
+              <div>
+                <span class="text-white font-medium">Add to Queue</span>
+                <p class="text-sm">
+                  When Spotify is playing, add any track to your queue with one click.
+                  It will play after the current track finishes.
+                </p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <div
+                class="w-8 h-8 bg-spotify-gray/30 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+              >
+                <svg
+                  class="w-4 h-4 text-spotify-green"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M8 5v14l11-7z"></path>
+                </svg>
+              </div>
+              <div>
+                <span class="text-white font-medium">Play Now</span>
+                <p class="text-sm">
+                  Start playing any track immediately on your active Spotify device.
+                  No need to switch apps - control playback right from Spillover.
+                </p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <div
+                class="w-8 h-8 bg-spotify-gray/30 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+              >
+                <svg
+                  class="w-4 h-4 text-spotify-green"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                  ></path>
+                </svg>
+              </div>
+              <div>
+                <span class="text-white font-medium">Playlist Import</span>
+                <p class="text-sm">
+                  Import playlists from YouTube, SoundCloud, Apple Music, and more.
+                  Paste a playlist URL or a list of "Artist - Title" tracks.
+                </p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <div
+                class="w-8 h-8 bg-spotify-gray/30 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+              >
+                <svg
+                  class="w-4 h-4 text-spotify-green"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                </svg>
+              </div>
+              <div>
+                <span class="text-white font-medium">Like All</span>
+                <p class="text-sm">
+                  After searching or importing, use the "Like All" button to save
+                  all unliked tracks to your library at once.
+                </p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <div
+                class="w-8 h-8 bg-spotify-gray/30 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+              >
+                <svg
+                  class="w-4 h-4 text-spotify-green"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </div>
+              <div>
+                <span class="text-white font-medium">Search History</span>
+                <p class="text-sm">
+                  Your recent searches are saved locally for quick access. Click
+                  the search bar to see your history.
+                </p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <div
+                class="w-8 h-8 bg-spotify-gray/30 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+              >
+                <svg
+                  class="w-4 h-4 text-spotify-green"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+                  ></path>
+                </svg>
+              </div>
+              <div>
+                <span class="text-white font-medium">Share Tracks</span>
+                <p class="text-sm">
+                  Copy a link to share any track. The share button copies the
+                  Spotify URL to your clipboard.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Playlist Import -->
+        <section>
+          <h3 class="text-white text-xl font-semibold mb-4">
+            Playlist Import
+          </h3>
+          <div
+            class="bg-spotify-green/10 border border-spotify-green/20 rounded-xl p-6 mb-4"
+          >
+            <div class="flex items-center gap-2 mb-3">
+              <svg class="w-5 h-5 text-spotify-green" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M15 6H3v2h12V6zm0 4H3v2h12v-2zM3 16h8v-2H3v2zM17 6v8.18c-.31-.11-.65-.18-1-.18-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3V8h3V6h-5z" />
+              </svg>
+              <span class="text-white font-semibold">Import entire playlists</span>
+            </div>
+            <p class="text-sm leading-relaxed">
+              Paste a playlist URL and Spillover will import all tracks at once.
+              We'll search Spotify for each track and show you how many were found.
+            </p>
+          </div>
+          <p class="text-sm text-spotify-lightgray mb-3">Supported playlist platforms:</p>
+          <ul class="space-y-2 text-sm">
+            <li class="flex items-center gap-2">
+              <span class="text-spotify-green">•</span>
+              <span><strong class="text-white">YouTube</strong> - youtube.com/playlist?list=...</span>
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="text-spotify-green">•</span>
+              <span><strong class="text-white">SoundCloud</strong> - soundcloud.com/user/sets/...</span>
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="text-spotify-green">•</span>
+              <span><strong class="text-white">Spotify</strong> - open.spotify.com/playlist/...</span>
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="text-spotify-green">•</span>
+              <span><strong class="text-white">Deezer</strong> - deezer.com/playlist/...</span>
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="text-spotify-green">•</span>
+              <span><strong class="text-white">Apple Music</strong> - music.apple.com/.../playlist/...</span>
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="text-spotify-green">•</span>
+              <span><strong class="text-white">Tidal</strong> - tidal.com/browse/playlist/...</span>
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="text-spotify-green">•</span>
+              <span><strong class="text-white">Amazon Music</strong> - music.amazon.com/playlists/...</span>
+            </li>
+          </ul>
+        </section>
+
+        <!-- Browser Extension -->
+        <section>
+          <h3 class="text-white text-xl font-semibold mb-4">
+            Browser Extension
+          </h3>
+          <div
+            class="bg-spotify-gray/10 rounded-lg p-4 border border-spotify-gray/20"
+          >
+            <p class="text-sm mb-4">
+              Install the browser extension for even faster saving. Right-click
+              any text or link and send it directly to Spillover.
+            </p>
+            <a
+              href="/extension"
+              class="inline-flex items-center gap-2 px-4 py-2 bg-spotify-green/20 text-spotify-green rounded-lg hover:bg-spotify-green/30 transition-colors text-sm font-medium"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
+                ></path>
+              </svg>
+              Learn about the extension
+            </a>
+          </div>
+        </section>
+
+        <!-- Tips -->
+        <section>
+          <h3 class="text-white text-xl font-semibold mb-4">Tips & Tricks</h3>
+          <ul class="space-y-3 text-sm">
+            <li class="flex items-start gap-2">
+              <span class="text-spotify-green mt-0.5">•</span>
+              <span
+                ><strong class="text-white">Be specific</strong> - Include the
+                artist name when searching to get better results</span
+              >
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-spotify-green mt-0.5">•</span>
+              <span
+                ><strong class="text-white">Use links when possible</strong> -
+                Pasting a YouTube or SoundCloud link gives more accurate results
+                than searching by title</span
+              >
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-spotify-green mt-0.5">•</span>
+              <span
+                ><strong class="text-white">Check track details</strong> -
+                Different versions, remixes, and covers exist. Verify the artist
+                and album before saving</span
+              >
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-spotify-green mt-0.5">•</span>
+              <span
+                ><strong class="text-white">Keep it open</strong> - Run
+                Spillover in a small window alongside whatever you're listening
+                to for quick saving</span
+              >
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-spotify-green mt-0.5">•</span>
+              <span
+                ><strong class="text-white">Check recommendations</strong> - The
+                sidebar shows tracks similar to what's playing on your Spotify</span
+              >
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-spotify-green mt-0.5">•</span>
+              <span
+                ><strong class="text-white">Keep Spotify open</strong> - When
+                Spotify is playing, extra buttons appear to add tracks to your
+                queue or play them immediately</span
+              >
+            </li>
+          </ul>
+        </section>
+
+        <!-- Open Source -->
+        <section>
+          <h3 class="text-white text-xl font-semibold mb-4">Open Source</h3>
+          <p class="text-sm">
+            Spillover is free and open source. View the code, report issues, or
+            contribute on{" "}
+            <a
+              href="https://github.com/mdeloughry/spotify-external-like"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-spotify-green hover:underline"
+            >
+              GitHub
+            </a>.
+          </p>
+        </section>
+      </div>
+
+      <!-- Back to App -->
+      <div class="mt-12 pt-8 border-t border-spotify-gray/20 text-center">
+        <a
+          href="/"
+          class="inline-flex items-center gap-2 px-6 py-3 bg-spotify-green text-black font-bold rounded-full hover:bg-spotify-green/90 hover:scale-105 transition-all"
+        >
+          Start Using Spillover
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</Layout>
